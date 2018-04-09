@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/demikandr/SideProjects/car-detect/catkin_ws/devel/setup.sh
