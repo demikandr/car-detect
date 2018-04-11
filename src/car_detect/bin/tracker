@@ -1,0 +1,8 @@
+#! /usr/bin/env python
+
+from tracker import tracker
+
+
+if __name__ == '__main__':
+    tracker.track()
+    
