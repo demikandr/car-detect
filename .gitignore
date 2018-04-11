@@ -45,4 +45,4 @@ qtcreator-*
 
 # Catkin custom files
 CATKIN_IGNORE
-data/
+data/lsml_task.bag
