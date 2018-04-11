@@ -4,7 +4,7 @@ import rospy
 from std_msgs.msg import String
 from car_detect.msg import  TrackedObject, DimensionsWithCovariance
 
-def talker():
+def track():
     pub = rospy.Publisher('chatter', TrackedObject, queue_size=10)
     rospy.init_node('talker', anonymous=True)
     rate = rospy.Rate(10) # 10hz
@@ -16,6 +16,6 @@ def talker():
 
 if  __name__ == '__main__':
     try:
-        talker()
+        track()
     except rospy.ROSInterruptException:
         pass

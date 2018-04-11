@@ -1,5 +1,6 @@
 <launch>
   <node pkg="rosbag" type="play" name="rosbag" required="true" args="-d 2 $(dirname)/../../../data/lsml_task.bag"/>
   <node name="modelvisualisation" pkg="rviz" type="rviz" output="screen" args="-d $(dirname)/../../../.rviz/lsml.rviz" />
+  <node name="tracker.py" pkg="car_detect" type="tracker.py"/>
 </launch>
  

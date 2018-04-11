@@ -74,6 +74,7 @@ generate_messages(
   geometry_msgs
 )
 catkin_package(CATKIN_DEPENDS message_runtime std_msgs geometry_msgs rospy)
+catkin_install_python(PROGRAMS bin/tracker DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
