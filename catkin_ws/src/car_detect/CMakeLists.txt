@@ -11,6 +11,7 @@ find_package(catkin REQUIRED
   std_msgs
   geometry_msgs
   message_generation
+  rospy
 )
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -72,7 +73,7 @@ generate_messages(
   std_msgs  # Or other packages containing msgs
   geometry_msgs
 )
-catkin_package(CATKIN_DEPENDS message_runtime std_msgs geometry_msgs)
+catkin_package(CATKIN_DEPENDS message_runtime std_msgs geometry_msgs rospy)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
