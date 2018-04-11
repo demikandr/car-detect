@@ -1,0 +1,3 @@
+<launch>
+  <node pkg="rosbag" type="play" name="rosbag" required="true" args="-d 2 $(dirname)/../../../data/lsml_task.bag"/>
+</launch>
