@@ -52,7 +52,12 @@
   <depend>std_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>rospy</depend>
+  <depend>roscpp</depend>
+  <depend>pcl_conversions</depend>
+  <depend>pcl_ros</depend>
+  <build_depend>libpcl-all-dev</build_depend>
   <build_depend>message_generation</build_depend>
+  <exec_depend>libpcl-all</exec_depend>
   <exec_depend>message_runtime</exec_depend>
 
   <!-- The export tag contains other, unspecified, tags -->

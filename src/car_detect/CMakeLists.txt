@@ -2,16 +2,19 @@ cmake_minimum_required(VERSION 2.8.3)
 project(car_detect)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED
+find_package(catkin REQUIRED COMPONENTS
   std_msgs
   geometry_msgs
   message_generation
   rospy
+  roscpp
+  pcl_conversions
+  pcl_ros
 )
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -73,7 +76,7 @@ generate_messages(
   std_msgs  # Or other packages containing msgs
   geometry_msgs
 )
-catkin_package(CATKIN_DEPENDS message_runtime std_msgs geometry_msgs rospy)
+catkin_package(CATKIN_DEPENDS message_runtime std_msgs geometry_msgs rospy roscpp pcl_conversions pcl_ros)
 catkin_install_python(PROGRAMS bin/tracker DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 ################################################
@@ -108,7 +111,7 @@ catkin_install_python(PROGRAMS bin/tracker DESTINATION ${CATKIN_PACKAGE_BIN_DEST
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES car_detect
-#  CATKIN_DEPENDS other_catkin_pkg
+#  CATKIN_DEPENDS roscpp rospy std_msgs generate_messages
 #  DEPENDS system_lib
 )
 
@@ -119,8 +122,8 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
-# ${catkin_INCLUDE_DIRS}
+ include
+ ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -136,7 +139,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/car_detect_node.cpp)
+add_executable(tracker_fast src/tracker.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -146,12 +149,12 @@ include_directories(
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(tracker_fast ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(${PROJECT_NAME}_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(tracker_fast
+  ${catkin_LIBRARIES}
+)
 
 #############
 ## Install ##
