@@ -49,3 +49,5 @@ data/lsml_task.bag
 devel/
 install/
 .catkin_workspace
+src/.idea
+src/cmake-build-debug/
