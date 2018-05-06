@@ -8,8 +8,10 @@ public:
     std::vector<std::vector<velodyne_pointcloud::PointOffsetIRL>> cylindricProjection;
     std::vector<std::vector<int>> indices;
     std::vector<std::vector<int>> mask;
+    int nPoints;
 
     CylindricProjection(const pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL>& cloud):
+            nPoints(cloud.size()),
             cylindricProjection(3000, std::vector<velodyne_pointcloud::PointOffsetIRL>(32)),
             indices(3000, std::vector<int>(32, -1)),
             mask(3000, std::vector<int>(32, 0))         {
@@ -25,19 +27,23 @@ public:
     }
 
     std::vector<std::vector<int>> getEdges() const {
-        std::vector<std::vector<int>> edges(3000, std::vector<int>(4, -1));
+        std::vector<std::vector<int>> edges(nPoints);
         for (int i = 0; i < 3000; ++i) {
             for (int j = 0; j < 32; ++j) {
                 if (mask[i][j] == 1) {
                     int pointIdx = indices[i][j];
-                    int leftIdx = indices[i][(j + 32 - 1) % 32];
-                    int rightIdx =  indices[i][(j + 1) % 32];
-                    int lowerIdx = indices[(i + 3000 - 1) % 3000][j];
-                    int upperIdx = indices[(i + 1) % 3000][j];
-                    edges[pointIdx][0] = leftIdx;
-                    edges[pointIdx][1] = rightIdx;
-                    edges[pointIdx][2] = lowerIdx;
-                    edges[pointIdx][3] = upperIdx;
+                    for (int k = 1; k < 15; ++k) { // TODO(demikandr) make a parameter
+                        int leftIdx = indices[(i + 3000 - k) % 3000][j];
+                        int rightIdx = indices[(i + k) % 3000][j];
+                        edges[pointIdx].push_back(leftIdx);
+                        edges[pointIdx].push_back(rightIdx);
+                    }
+                    for (int k = 1; k < 3; ++k) {
+                        int lowerIdx = indices[i][(j + 32 - k) % 32];
+                        int upperIdx = indices[i][(j + k) % 32];
+                        edges[pointIdx].push_back(lowerIdx);
+                        edges[pointIdx].push_back(upperIdx);
+                    }
                 }
             }
         }

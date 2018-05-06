@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   pcl_conversions
   pcl_ros
+  dynamic_reconfigure
 )
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -48,6 +49,9 @@ catkin_python_setup()
 ##     and list every .msg/.srv/.action file to be processed
 ##   * uncomment the generate_messages entry below
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
+generate_dynamic_reconfigure_options (
+  cfg/general.cfg
+)
 
 ## Generate messages in the 'msg' folder
 add_message_files(
@@ -109,7 +113,7 @@ catkin_install_python(PROGRAMS bin/tracker DESTINATION ${CATKIN_PACKAGE_BIN_DEST
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
+#  INCLUDE_DIRS src
 #  LIBRARIES car_detect
 #  CATKIN_DEPENDS roscpp rospy std_msgs generate_messages
 #  DEPENDS system_lib
@@ -139,8 +143,8 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(tracker_fast src/tracker.cpp)
-
+add_executable(tracker_fast src/tracker.cpp src/CylindricProjection.cpp src/CylindricProjection.h src/Utils.h src/Detections.cpp src/Detections.h src/ConfigWrapper.h)
+add_dependencies(tracker_fast ${PROJECT_NAME}_gencfg)
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
