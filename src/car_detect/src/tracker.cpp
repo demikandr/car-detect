@@ -4,75 +4,106 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/visualization/pcl_visualizer.h>
+#include "Utils.h"
 #include<iostream>
 #include<string>
 #include<algorithm>
 //#include <pcl/point_cloud.h>
 //#include <pcl/impl/point_types.hpp>
-
+#include "CylindricProjection.h"
 
 ros::Publisher pub;
 std::string version="0.004";
 
-class Utils {
-    const pcl::PointCloud <pcl::PointXYZRGB> &cloud;
-    const int size;
-public:
-    Utils(const pcl::PointCloud<pcl::PointXYZRGB> &cloud): cloud(cloud), size(cloud.points.size()) {    }
-    int safe_idx(int idx) const {
-        return (idx + size) % size;
-    }
-
-    double l2(const int idx) const {
-//        pcl::Vector3fMap current(cloud.points[safe_idx(idx)].getVector3fMap());
-        pcl::PointXYZRGB point = cloud.points[safe_idx(idx)];
-
-        double result = sqrt(point.x * point.x + point.y* point.y + point.z * point.z);// .getVector3fMap().lpNorm<2>();
-        assert(result > 0);
-        return result;
-    }
-
-    bool isLowestLevel(const int point_idx) const {
-        double relative_distance = (l2(point_idx - 1) - l2(point_idx)) ; //// std::max( l2(point_idx - 1), l2(point_idx)) );
-//        assert(relative_distance 52< 1);
-        if (relative_distance> 4) {
-            std::cerr <<'\n' << point_idx <<  '\t' << cloud.points[point_idx] << std::endl;
-            std::cerr << safe_idx(point_idx-1) << '\t' << cloud.points[safe_idx(point_idx-1)] << std::endl;
+std::vector<int> markGround(const Utils& utils, const pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL>& cloud) {
+    std::vector<std::vector<int>> edges(cloud.size());
+    std::vector<int> groundMask(cloud.size());
+    for (size_t i = 0; i < cloud.size(); ++i) {
+        if (i % 10000 == 0) {
+            std::cerr << i << std::endl;
         }
-        return ( relative_distance> 50);
-//    or (cloud.points[safe_idx(point_idx - 1)].z - cloud.points[safe_idx(point_idx)].z > 1);
-    }
-
-    bool isHighestLevel(const int point_idx) const {
-        return isLowestLevel(point_idx + 1);
-    }
-
-    double oxyAngleCos(const int x_idx, const int y_idx) const {
-        pcl::PointXYZRGB x = cloud.points[x_idx];
-        pcl::PointXYZRGB y = cloud.points[y_idx];
-        pcl::Vector3fMap vec1(x.getVector3fMap());
-        Eigen::Vector3f vec2(y.getVector3fMap() - x.getVector3fMap());
-        return vec1.dot(vec2) / (vec1.lpNorm<2>()  * vec2.lpNorm<2>() + 0.01);
-    }
-};
-
-void clusterize(pcl::PointCloud<pcl::PointXYZRGB>* cloud) {
-    std::vector<std::vector<int>> edges(cloud->size());
-    std::vector<bool> groundMask(cloud->size());
-    Utils utils(*cloud);
-    for (int i = 0; i < cloud->size(); ++i) {
-//        std::cerr << i << std::endl;
-//        if (!utils.isHighestLevel(i) && (abs(1 - utils.oxyAngleCos(i, i+1)) < 0.1 ) && ((utils.isLowestLevel(i))  or groundMask[utils.safe_idx(i-1)])) {
-        if (((utils.isLowestLevel(i)))) { //}} && !groundMask[utils.safe_idx(i-1)]) {
+//        std::cerr << i << '\t' << cloud[i].ring << std::endl;
+        if ((utils.isLowestLevel(i) or ((i > 0) && (groundMask[i-1] == true)))
+             and !utils.isHighestLevel(i) and (utils.oxyAngleCos(i, i+1) > 0.8) ) { //}} && !groundMask[utils.safe_idx(i-1)]) {
             groundMask[i] = true;
-            cloud->at(i).b = 128;
-        } else {
-            cloud->at(i).g = 128 ;
+        }
+    }
+    return groundMask;
+}
+
+bool isEdge(const Utils& utils, const int pointIdx1, const int pointIdx2) {
+    return abs(utils.oxyAngleCos(pointIdx1, pointIdx2)) < 0.9;
+}
+void dfs(const int pointIdx,  std::vector<int>* clustersPtr, const std::vector<std::vector<int>> edges, const int clusterIdx, const Utils& utils) {
+    std::vector<int> clusters = *clustersPtr;
+    clusters[pointIdx] = clusterIdx;
+    for (int i = 0; i < edges[pointIdx].size(); ++i) {
+        int nextPointIdx = edges[pointIdx][i];
+        if ((nextPointIdx >= 0) && (clusters[nextPointIdx] == 0) && isEdge(utils, pointIdx, nextPointIdx)) {
+            dfs(edges[pointIdx][i], clustersPtr, edges, clusterIdx, utils);
         }
     }
 }
 
-int ii = 0;
+std::vector<int> clusterize(const pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL>& cloud) {
+    const Utils utils(cloud);
+    const CylindricProjection& cylindricProjection(cloud);
+    std::vector<std::vector<int>> edges(cylindricProjection.getScanLength(), std::vector<int>(4, -1));
+
+    std::vector<int> clusters = markGround(utils, cloud); // 0 is not a ground, 1 is a ground
+
+    std::vector<std::vector<int>> visited(cylindricProjection.getScansNumber(), std::vector(cylindricProjection.getScanLength(), 0));
+    int nextClusterIdx = 0;
+    for (int i = 0; i < cloud.size(); ++i) {
+        if (clusters[i] == 0) {
+            dfs(i, &clusters, edges, nextClusterIdx, utils);
+            nextClusterIdx++;
+        }
+    }
+    return clusters;
+}
+
+void colourPoint(pcl::PointXYZRGB& point, const int cluster) {
+    point.r = cluster * 53 % 256;
+    point.g =100 +  cluster * 29 % 256;
+    point.b = 200 + cluster * 71 % 256;
+}
+pcl::PointCloud<pcl::PointXYZRGB> colourClusters(const pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL>& cloud,
+        const std::vector<int>& clusters) {
+    pcl::PointCloud<pcl::PointXYZRGB> coloured_cloud;
+    pcl::copyPointCloud(cloud, coloured_cloud);
+    for (int i = 0; i < coloured_cloud.size(); ++i) {
+        colourPoint(coloured_cloud[i], clusters[i]);
+    }
+}
+
+pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL> restoreOrder(const pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL>& cloud) {
+    std::vector<velodyne_pointcloud::PointOffsetIRL> buffer{cloud[0]};
+    pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL> orderedCloud(cloud);
+    orderedCloud.clear();
+    for (int i = 1; i < cloud.size(); ++i) {
+//        std::cerr << i << '\t' << cloud[i].ring << std::endl;
+        if (cloud[i].ring == 1 +  buffer.back().ring) {
+            buffer.push_back(cloud[i]);
+        } else if ((cloud[i].ring > 1 + buffer.back().ring) and (cloud[i].ring > orderedCloud.back().ring)) {
+//            std::cerr << "O\t" << cloud[i].ring << std::endl;
+            orderedCloud.push_back(cloud[i]);
+        } else {
+//            std::cerr << "clear buffer" << std::endl;
+            for (velodyne_pointcloud::PointOffsetIRL& point: buffer) {
+//                std::cerr <<  "B\t" << point.ring << std::endl;
+                orderedCloud.push_back(point);
+            }
+            buffer.clear();
+            buffer.push_back(cloud[i]);
+        }
+    }
+    for (velodyne_pointcloud::PointOffsetIRL& point: buffer) {
+        orderedCloud.push_back(point);
+    }
+    std::cerr << "Cloud is ordered" << std::endl;
+    return orderedCloud;
+}
 
 void cloud_cb (const sensor_msgs::PointCloud2ConstPtr& input)
 {
@@ -82,11 +113,12 @@ void cloud_cb (const sensor_msgs::PointCloud2ConstPtr& input)
     pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL> cloud;
     pcl::fromROSMsg(*input, cloud);
     //    pcl::
-//        clusterize(&cloud);
+    std::vector<int> clusters = clusterize(restoreOrder(cloud));
+    pcl::PointCloud<pcl::PointXYZRGB> colored_cloud = colourClusters(cloud, clusters);
 //        std::cerr << cloud.points[15].x <<  '\t' << cloud.points[15].y << '\t' << cloud.points[15].z << '\t' << cloud.points.size() << std::endl;
 //        std::cerr << cloud.points[30015].x <<  '\t' << cloud.points[30015].y << '\t' << cloud.points[30015].z << '\t' << cloud.points.size() << std::endl;
     sensor_msgs::PointCloud2 output;
-    pcl::toROSMsg(cloud, output);
+    pcl::toROSMsg(colored_cloud, output);
     pub.publish(output);
 
 }
