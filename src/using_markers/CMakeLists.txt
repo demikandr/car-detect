@@ -10,6 +10,7 @@ project(using_markers)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   visualization_msgs
+  car_detect
 )
 
 ## System dependencies are found with CMake's conventions
@@ -198,6 +199,6 @@ include_directories(
 # catkin_add_nosetests(test)
 
 add_executable(basic_shapes src/basic_shapes.cpp)
-target_link_libraries(basic_shapes ${catkin_LIBRARIES})
 
-add_dependencies(basic_shapes ${catkin_EXPORTED_TARGETS})
+add_dependencies(basic_shapes ${car_detect_EXPORTED_TARGETS})
+target_link_libraries(basic_shapes ${catkin_LIBRARIES})

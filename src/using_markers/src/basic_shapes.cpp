@@ -41,7 +41,7 @@ void bboxCallback(const car_detect::TrackedObjectConstPtr tracked_object)
       marker.lifetime = ros::Duration();
 
       // Publish the data.
-      pub.publish (marker);
+       marker_pub.publish (marker);
    }
 
 
@@ -53,7 +53,7 @@ int main( int argc, char** argv )
   ros::Publisher marker_pub = n.advertise<visualization_msgs::Marker>("visualization_marker", 1);
 
   // Set our initial shape type to be a cube
- ros::Subscriber sub = nh.subscribe("input", 1, bboxCallback);
+ ros::Subscriber sub = n.subscribe("input", 1, bboxCallback);
  marker_pub = n.advertise<visualization_msgs::Marker>("visualization_marker", 1);
 
   ros::spin ();

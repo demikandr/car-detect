@@ -55,7 +55,7 @@
   <build_export_depend>visualization_msgs</build_export_depend>
   <exec_depend>roscpp</exec_depend>
   <exec_depend>visualization_msgs</exec_depend>
-
+  <depend>car_detect</depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
