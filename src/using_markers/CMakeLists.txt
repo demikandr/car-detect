@@ -199,3 +199,5 @@ include_directories(
 
 add_executable(basic_shapes src/basic_shapes.cpp)
 target_link_libraries(basic_shapes ${catkin_LIBRARIES})
+
+add_dependencies(basic_shapes ${catkin_EXPORTED_TARGETS})
