@@ -1,3 +1,4 @@
+#pragma once
 #include <dynamic_reconfigure/server.h>
 #include <car_detect/generalConfig.h>
 #include <boost/phoenix/bind/bind_member_function.hpp>

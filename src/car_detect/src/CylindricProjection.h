@@ -1,3 +1,4 @@
+#pragma once
 #include<vector>
 #include "point_type.h"
 #include<assert.h>

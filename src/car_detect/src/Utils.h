@@ -1,3 +1,4 @@
+#pragma once
 #include <pcl_conversions/pcl_conversions.h>
 
 class Utils {

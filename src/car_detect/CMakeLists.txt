@@ -143,7 +143,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(tracker_fast src/tracker.cpp src/CylindricProjection.cpp src/CylindricProjection.h src/Utils.h src/Detections.cpp src/Detections.h src/ConfigWrapper.h)
+add_executable(tracker_fast src/tracker.cpp src/CylindricProjection.cpp src/CylindricProjection.h src/Utils.h src/Detections.cpp src/Detections.h src/ConfigWrapper.h src/Clusterizer.h)
 add_dependencies(tracker_fast ${PROJECT_NAME}_gencfg)
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
