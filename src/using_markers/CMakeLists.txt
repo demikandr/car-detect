@@ -202,3 +202,9 @@ add_executable(basic_shapes src/basic_shapes.cpp)
 
 add_dependencies(basic_shapes ${car_detect_EXPORTED_TARGETS})
 target_link_libraries(basic_shapes ${catkin_LIBRARIES})
+install(TARGETS basic_shapes
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+      RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+      )
+      
