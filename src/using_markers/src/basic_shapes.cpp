@@ -19,18 +19,18 @@ void bboxCallback(const car_detect::TrackedObjectConstPtr tracked_object)
       marker.type = shape;
       marker.action = visualization_msgs::Marker::ADD;
 
-      marker.pose.position.x = object.pose.x;
-      marker.pose.position.y = object.pose.y;
-      marker.pose.position.z = object.pose.z;
+      marker.pose.position.x = object.pose.pose.position.x;
+      marker.pose.position.y = object.pose.pose.position.y;
+      marker.pose.position.z = object.pose.pose.position.z;
       marker.pose.orientation.x = 0.0;
       marker.pose.orientation.y = 0.0;
       marker.pose.orientation.z = 0.0;
       marker.pose.orientation.w = 0.0;
 
       // Set the scale of the marker -- 1x1x1 here means 1m on a side
-      marker.scale.x = object.dims.x;
-      marker.scale.y = object.dims.y;
-      marker.scale.z = object.dims.z;
+      marker.scale.x = object.dims.dimensions.x;
+      marker.scale.y = object.dims.dimensions.y;
+      marker.scale.z = object.dims.dimensions.z;
 
       // Set the color -- be sure to set alpha to something non-zero!
       marker.color.r = 0.0f;
