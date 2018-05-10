@@ -10,6 +10,7 @@
 #include <pcl/point_cloud.h>
 #include "point_type.h"
 #include <car_detect/TrackedObject.h>
+#include <car_detect/TrackedObjects.h>
 
 class BBox {
 public:
@@ -113,6 +114,13 @@ public:
             }
         }
         return closestDetectionIdx;
+    }
+    car_detect::TrackedObjects getTrackedObjects() const {
+        car_detect::TrackedObjects trackedObjects;
+        for (const BBox& bbox: detections) {
+            trackedObjects.trackedObjects.push_back(bbox.getTrackedObject());
+        }
+        return trackedObjects;
     }
 };
 

@@ -58,6 +58,7 @@ add_message_files(
   FILES
   DimensionsWithCovariance.msg
   TrackedObject.msg
+  TrackedObjects.msg
 )
 
 ## Generate services in the 'srv' folder

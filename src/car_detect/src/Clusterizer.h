@@ -11,41 +11,22 @@
 #include "ConfigWrapper.h"
 #include "Detections.h"
 #include <ros/console.h>
-#include <car_detect/TrackedObject.h>
+#include <car_detect/TrackedObjects.h>
 #include <queue>
 #include <tf/tfMessage.h>
+#include <tf/transform_datatypes.h>
 
 class Clusterizer {
 public:
     ros::Publisher pub, bboxPub;
     ConfigWrapper config;
-    std::queue<car_detect::TrackedObject> history;
+    std::queue<car_detect::TrackedObjects> history;
+    tf::Transform transform;
 
-    void operator() (const sensor_msgs::PointCloud2ConstPtr& input)
-    {
 
-        // Create a container for the data.
-
-        pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL> cloud;
-        pcl::fromROSMsg(*input, cloud);
-        //    pcl::
-        const pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL> orderedCloud  = restoreOrder(cloud);
-        auto clusterization = clusterize(orderedCloud);
-        const std::vector<int> clusters = clusterization.first;
-        const int clustersNumber = clusterization.second;
-        Detections detections(orderedCloud, clusters, clustersNumber);
-        pcl::PointCloud<pcl::PointXYZRGB> colored_cloud = colourClusters(orderedCloud, clusters);
-        //        std::cerr << cloud.points[15].x <<  '\t' << cloud.points[15].y << '\t' << cloud.points[15].z << '\t' << cloud.points.size() << std::endl;
-        //        std::cerr << cloud.points[30015].x <<  '\t' << cloud.points[30015].y << '\t' << cloud.points[30015].z << '\t' << cloud.points.size() << std::endl;
-        sensor_msgs::PointCloud2 output;
-        pcl::toROSMsg(colored_cloud, output);
-        pub.publish(output);
-        car_detect::TrackedObject trackedObject = detections.detections[0].getTrackedObject();
-        bboxPub.publish(trackedObject);
-    }
     Clusterizer() {
     }
-    std::vector<int> markGround(const Utils& utils, const pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL>& cloud) {
+    std::vector<int> markGround(const Utils& utils, const pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL>& cloud) const {
         ROS_DEBUG("start markGround");
         std::vector<std::vector<int>> edges(cloud.size());
         std::vector<int> groundMask(cloud.size());
@@ -63,12 +44,12 @@ public:
         return groundMask;
     }
 
-    bool isEdge(const Utils& utils, const int pointIdx1, const int pointIdx2) {
+    bool isEdge(const Utils& utils, const int pointIdx1, const int pointIdx2) const {
         return ((abs(utils.oxyAngleCos(pointIdx1, pointIdx2)) < config.alpha) or (utils.distance(pointIdx1, pointIdx2) < 0.1))
                and (utils.distance(pointIdx1, pointIdx2) / std::min(utils.l2(pointIdx1), utils.l2(pointIdx2)) < 0.5 / 2.);
     }
 
-    int dfs(const int pointIdx,  std::vector<int>* clustersPtr, const std::vector<std::vector<int>>& edges, const int clusterIdx, const Utils& utils) {
+    int dfs(const int pointIdx,  std::vector<int>* clustersPtr, const std::vector<std::vector<int>>& edges, const int clusterIdx, const Utils& utils) const {
         std::vector<int>& clusters = *clustersPtr;
 
         clusters[pointIdx] = clusterIdx;
@@ -82,7 +63,7 @@ public:
         return clusterSize;
     }
 
-    std::pair<std::vector<int>, int> clusterize(const pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL>& cloud) {
+    std::pair<std::vector<int>, int> clusterize(const pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL>& cloud) const {
         ROS_DEBUG("start clusterize");
         const Utils utils(cloud);
         ROS_DEBUG("start cylindricProjectiionCreation");
@@ -123,7 +104,7 @@ public:
         return std::make_pair(clusters, clustersNumber);
     }
 
-    void colourPoint(pcl::PointXYZRGB& point, const int cluster) {
+    void colourPoint(pcl::PointXYZRGB& point, const int cluster) const {
         if (cluster == 0) {
             point.r = 255;
         } else {
@@ -134,7 +115,7 @@ public:
     }
 
     pcl::PointCloud<pcl::PointXYZRGB> colourClusters(const pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL>& cloud,
-                                                     const std::vector<int>& clusters) {
+                                                     const std::vector<int>& clusters) const {
         ROS_DEBUG("start colourClusters");
 
         pcl::PointCloud<pcl::PointXYZRGB> coloured_cloud;
@@ -147,7 +128,7 @@ public:
         return coloured_cloud;
     }
 
-    pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL> restoreOrder(const pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL>& cloud) {
+    pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL> restoreOrder(const pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL>& cloud) const {
         std::vector<velodyne_pointcloud::PointOffsetIRL> buffer{cloud[0]};
         pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL> orderedCloud(cloud);
         orderedCloud.clear();
@@ -175,6 +156,9 @@ public:
         return orderedCloud;
     }
     void updateOdometry(const tf::tfMessageConstPtr& messagePtr) {
-
+        assert(messagePtr->transforms.size() == 1);
+        if (messagePtr->transforms[0].header.frame_id == "odometric_world") {
+            tf::transformMsgToTF(messagePtr->transforms[0].transform, transform);
+        }
     }
 };

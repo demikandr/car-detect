@@ -51,3 +51,4 @@ install/
 .catkin_workspace
 src/.idea
 src/cmake-build-debug/
+build_clion/
