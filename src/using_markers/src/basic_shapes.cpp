@@ -13,15 +13,15 @@ void bboxCallback(const car_detect::TrackedObjectsConstPtr tracked_objects)
       car_detect::TrackedObjects objects = *tracked_objects;
 
 
+       visualization_msgs::Marker marker;
+       marker.header.frame_id = "/car_frame";
+       marker.header.stamp = ros::Time::now();
+       marker.ns = "basic_shapes";
+       marker.type = shape;
+       marker.action = visualization_msgs::Marker::ADD;
+       marker.id = 0;
       for (int i = 0; i < objects.trackedObjects.size(); ++i) {
         car_detect::TrackedObject object = objects.trackedObjects[i];
-        visualization_msgs::Marker marker;
-        marker.header.frame_id = "/car_frame";
-        marker.header.stamp = ros::Time::now();
-        marker.ns = "basic_shapes" + i;
-        marker.id = i;
-        marker.type = shape;
-        marker.action = visualization_msgs::Marker::ADD;
 
         geometry_msgs::Point p1;
         geometry_msgs::Point p2;
@@ -115,7 +115,7 @@ void bboxCallback(const car_detect::TrackedObjectsConstPtr tracked_objects)
         // marker.pose.orientation.w = 0.0;
 
         // // Set the scale of the marker -- 1x1x1 here means 1m on a side
-        // marker.scale.x = object.dims.dimensions.x;
+         marker.scale.x = 0.1;
         // marker.scale.y = object.dims.dimensions.y;
         // marker.scale.z = object.dims.dimensions.z;
         // marker.scale.x = 1.0;
@@ -128,11 +128,10 @@ void bboxCallback(const car_detect::TrackedObjectsConstPtr tracked_objects)
         marker.color.b = 0.5f;
         marker.color.a = 1.0;
 
-        marker.lifetime = ros::Duration();
 
         // Publish the data.
-         marker_pub.publish (marker);
       }
+       marker_pub.publish (marker);
    }
 
 
