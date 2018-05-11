@@ -11,6 +11,7 @@
 #include "point_type.h"
 #include <car_detect/TrackedObject.h>
 #include <car_detect/TrackedObjects.h>
+#include <boost/optional.hpp>
 
 class BBox {
 public:
@@ -75,6 +76,7 @@ public:
         }
     }
 
+
     car_detect::TrackedObject getTrackedObject() const {
         car_detect::TrackedObject trackedObject;
 
@@ -102,7 +104,7 @@ public:
             }
         }
     }
-    int findClosestDetectionIdx(const BBox&  detection, const float threshold=0.5) const {
+    boost::optional<int> findClosestDetectionIdxO(const BBox&  detection, const float threshold=0.5) const {
         assert(threshold > 0);
         float maxIOU = threshold; // intersection over union
         int closestDetectionIdx = -1;
@@ -113,7 +115,20 @@ public:
                 closestDetectionIdx = i;
             }
         }
-        return closestDetectionIdx;
+        if (closestDetectionIdx) {
+            return closestDetectionIdx;
+        } else {
+            return {};
+        }
+    }
+
+    boost::optional<BBox> findClosestDetectionO(const BBox& detection, const float threshold=0.5) const {
+        boost::optional<int> closestDetectionIdx = findClosestDetectionIdxO(detection, threshold);
+        if (closestDetectionIdx) {
+            return detections[*closestDetectionIdx];
+        } else {
+            return {};
+        }
     }
     car_detect::TrackedObjects getTrackedObjects() const {
         car_detect::TrackedObjects trackedObjects;

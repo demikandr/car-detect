@@ -26,18 +26,38 @@ public:
 
     Clusterizer() {
     }
+
+    bool isGroundEdge(const Utils& utils, int i, int j) const {
+        return utils.oxyAngleCos(i, j) > config.alpha_ground;
+    }
     std::vector<int> markGround(const Utils& utils, const pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL>& cloud) const {
         ROS_DEBUG("start markGround");
-        std::vector<std::vector<int>> edges(cloud.size());
         std::vector<int> groundMask(cloud.size());
         for (size_t i = 0; i < cloud.size(); ++i) {
-            if (i % 10000 == 0) {
-                std::cerr << i << std::endl;
-            }
-            //        std::cerr << i << '\t' << cloud[i].ring << std::endl;
             if ((utils.isLowestLevel(i) or ((i > 0) && (groundMask[i-1] == 1)))
-                and !utils.isHighestLevel(i) and (utils.oxyAngleCos(i, i+1) > 0.8) ) { //}} && !groundMask[utils.safe_idx(i-1)]) {
+                and !utils.isHighestLevel(i) and isGroundEdge(utils, i, i+1) ) { //}} && !groundMask[utils.safe_idx(i-1)]) {
                 groundMask[i] = 1;
+            }
+        }
+        ROS_DEBUG("end markGround");
+        return groundMask;
+    }
+    std::vector<int> markGround(const Utils& utils, const CylindricProjection& cloud) const {
+        ROS_DEBUG("start markGround");
+        std::vector<int> groundMask(cloud.nPoints);
+        const std::vector<std::vector<int>>& mask = cloud.mask;
+        const std::vector<std::vector<int>>& indices = cloud.indices;
+        for (size_t i = 0; i < mask.size(); ++i) {
+            for (size_t j = 0; j < mask[i].size(); ++j) {
+//                std::cerr << i << '\t' << j << '\t' << indices[i][j] <<  std::endl;
+                if (mask[i][j] and
+                        ((j == 0) or (mask[i][j-1] == 0) or (groundMask[indices[i][j - 1]] == 1) or
+                        ((i > 0) and groundMask[indices[i-1][j]]) or // TODO(demikandr) case of i == 0
+                        ((i + 1 < mask.size()) and groundMask[indices[i+1][j]])) and // TODO(demikandr) case of i + 1 == mask.size()
+                            ((j < mask[i].size()) and mask[i][j + 1] == 1 and isGroundEdge(utils, indices[i][j], indices[i][j+1])))
+                     { //}} && !groundMask[utils.safe_idx(i-1)]) {
+                    groundMask[indices[i][j]] = 1;
+                }
             }
         }
         ROS_DEBUG("end markGround");
@@ -70,7 +90,7 @@ public:
         const CylindricProjection& cylindricProjection(cloud);
         std::vector<std::vector<int>> edges = cylindricProjection.getEdges();
 
-        std::vector<int> clusters = markGround(utils, cloud); // 0 is not a ground, 1 is a ground
+        std::vector<int> clusters = markGround(utils, cylindricProjection); // 0 is not a ground, 1 is a ground
 
         std::vector<std::vector<int>> visited(cylindricProjection.getScansNumber(), std::vector<int>(cylindricProjection.getScanLength(), 0));
         int nextClusterIdx = 2;
@@ -115,7 +135,8 @@ public:
     }
 
     pcl::PointCloud<pcl::PointXYZRGB> colourClusters(const pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL>& cloud,
-                                                     const std::vector<int>& clusters) const {
+                                                     const std::vector<int>& clusters,
+                                                     const std::vector<bool>& mask) const {
         ROS_DEBUG("start colourClusters");
 
         pcl::PointCloud<pcl::PointXYZRGB> coloured_cloud;
@@ -126,6 +147,12 @@ public:
 
         ROS_DEBUG("end colourClusters");
         return coloured_cloud;
+    }
+
+    pcl::PointCloud<pcl::PointXYZRGB> colourClusters(const pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL>& cloud,
+                                                     const std::vector<int>& clusters) const {
+        const std::vector<bool> mask(cloud.size(), true);
+        return colourClusters(cloud, clusters, mask);
     }
 
     pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL> restoreOrder(const pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL>& cloud) const {
@@ -152,7 +179,6 @@ public:
         for (velodyne_pointcloud::PointOffsetIRL& point: buffer) {
             orderedCloud.push_back(point);
         }
-        std::cerr << "Cloud is ordered" << std::endl;
         return orderedCloud;
     }
     void updateOdometry(const tf::tfMessageConstPtr& messagePtr) {
@@ -160,5 +186,16 @@ public:
         if (messagePtr->transforms[0].header.frame_id == "odometric_world") {
             tf::transformMsgToTF(messagePtr->transforms[0].transform, transform);
         }
+    }
+
+    std::vector<bool> filterDetections(const Detections& detections) const {
+        std::vector<bool> mask(2, true);
+        for (const BBox& detection: detections.detections) {
+            assert(detection.zMax > detection.zMin);
+            mask.push_back(std::max(detection.zMax - detection.zMax,
+                                    std::max(detection.yMax - detection.yMin, detection.xMax - detection.xMin)) < config.detections_filter_upper_bound);
+        }
+        std::vector<bool> mask(detections.detections.size() + 2, true);
+        return mask;
     }
 };

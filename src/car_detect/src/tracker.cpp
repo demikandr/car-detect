@@ -11,14 +11,44 @@
 #include "CylindricProjection.h"
 #include "ConfigWrapper.h"
 #include <car_detect/TrackedObjects.h>
-#include <queue>
+#include <deque>
 #include <tf/tfMessage.h>
 #include <pcl_ros/transforms.h>
 #include "Clusterizer.h"
 #include <pcl_ros/impl/transforms.hpp>
+#include <boost/optional.hpp>
 
 // А потом сохранять box-
 std::string version="0.004";
+
+
+std::deque<Detections> history;
+
+int maxHistorySize = 5;
+
+
+void addDetectionsToHistory(const Detections& detections) {
+    assert(maxHistorySize > 0);
+    if (history.size() == maxHistorySize) {
+        history.pop_front();
+    }
+    history.push_back(detections);
+}
+
+Detections getDetectionsFromHistory() {
+    assert(!history.empty());
+    for (const BBox& detection: history.back().detections) {
+        std::vector<BBox> similarDetections;
+        for (const Detections oldDetections: history) {
+            boost::optional<BBox> closestBBox = oldDetections.findClosestDetectionO(detection);
+            if (closestBBox) {
+                similarDetections.push_back(detection);
+            }
+        }
+//        if len(similarDetections )
+    }
+}
+
 
 void callback(const Clusterizer& clusterizer, const sensor_msgs::PointCloud2ConstPtr& input)
 {
@@ -37,7 +67,9 @@ void callback(const Clusterizer& clusterizer, const sensor_msgs::PointCloud2Cons
     pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL> globalCoordsCloud;
     pcl_ros::transformPointCloud(orderedCloud, globalCoordsCloud, clusterizer.transform);
     Detections detections(globalCoordsCloud, clusters, clustersNumber);
-    pcl::PointCloud<pcl::PointXYZRGB> colored_cloud = clusterizer.colourClusters(globalCoordsCloud, clusters);
+    std::vector<bool> mask = clusterizer.filterDetections(detections);
+
+    pcl::PointCloud<pcl::PointXYZRGB> colored_cloud = clusterizer.colourClusters(globalCoordsCloud, clusters, mask);
     //        std::cerr << cloud.points[15].x <<  '\t' << cloud.points[15].y << '\t' << cloud.points[15].z << '\t' << cloud.points.size() << std::endl;
     //        std::cerr << cloud.points[30015].x <<  '\t' << cloud.points[30015].y << '\t' << cloud.points[30015].z << '\t' << cloud.points.size() << std::endl;
     sensor_msgs::PointCloud2 output;
