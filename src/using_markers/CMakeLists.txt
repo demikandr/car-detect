@@ -208,3 +208,4 @@ install(TARGETS basic_shapes
       RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
       )
       
+target_link_libraries(basic_shapes ${catkin_LIBRARIES})
