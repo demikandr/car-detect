@@ -1,0 +1,280 @@
+Base path: /home/tatiana/car-detect
+Source space: /home/tatiana/car-detect/src
+Build space: /home/tatiana/car-detect/build
+Devel space: /home/tatiana/car-detect/devel
+Install space: /home/tatiana/car-detect/install
+####
+#### Running command: "cmake /home/tatiana/car-detect/src -DPYTHON_EXECUTABLE=/usr/bin/python2 -DPYTHON_INCLUDE_DIR=/usr/include/python2.7 -DPYTHON_LIBRARY=/usr/lib/libpython2.7.so -DCATKIN_DEVEL_PREFIX=/home/tatiana/car-detect/devel -DCMAKE_INSTALL_PREFIX=/home/tatiana/car-detect/install -G Unix Makefiles" in "/home/tatiana/car-detect/build"
+####
+-- The C compiler identification is GNU 5.4.0
+-- The CXX compiler identification is GNU 5.4.0
+-- Check for working C compiler: /usr/bin/cc
+-- Check for working C compiler: /usr/bin/cc -- works
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Check for working CXX compiler: /usr/bin/c++
+-- Check for working CXX compiler: /usr/bin/c++ -- works
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Using CATKIN_DEVEL_PREFIX: /home/tatiana/car-detect/devel
+-- Using CMAKE_PREFIX_PATH: /home/tatiana/car-detect/devel;/home/tatiana/car-detect/install;/opt/ros/lunar
+-- This workspace overlays: /home/tatiana/car-detect/devel;/home/tatiana/car-detect/install;/opt/ros/lunar
+-- Found PythonInterp: /usr/bin/python2 (found version "2.7.12") 
+-- Using PYTHON_EXECUTABLE: /usr/bin/python2
+-- Using Debian Python package layout
+-- Using empy: /usr/bin/empy
+-- Using CATKIN_ENABLE_TESTING: ON
+-- Call enable_testing()
+-- Using CATKIN_TEST_RESULTS_DIR: /home/tatiana/car-detect/build/test_results
+-- Found gmock sources under '/usr/src/gmock': gmock will be built
+-- Looking for pthread.h
+-- Looking for pthread.h - found
+-- Looking for pthread_create
+-- Looking for pthread_create - not found
+-- Looking for pthread_create in pthreads
+-- Looking for pthread_create in pthreads - not found
+-- Looking for pthread_create in pthread
+-- Looking for pthread_create in pthread - found
+-- Found Threads: TRUE  
+-- Found gtest sources under '/usr/src/gmock': gtests will be built
+-- Using Python nosetests: /usr/bin/nosetests-2.7
+-- catkin 0.7.11
+-- BUILD_SHARED_LIBS is on
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-- ~~  traversing 2 packages in topological order:
+-- ~~  - car_detect
+-- ~~  - using_markers
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-- +++ processing catkin package: 'car_detect'
+-- ==> add_subdirectory(car_detect)
+-- Using these message generators: gencpp;geneus;genlisp;gennodejs;genpy
+-- car_detect: 2 messages, 0 services
+-- +++ processing catkin package: 'using_markers'
+-- ==> add_subdirectory(using_markers)
+-- Configuring done
+CMake Warning at car_detect/CMakeLists.txt:146 (add_executable):
+  Cannot generate a safe runtime search path for target tracker_fast because
+  files in some directories may conflict with libraries in implicit
+  directories:
+
+    runtime library [libz.so.1] in /usr/lib/x86_64-linux-gnu may be hidden by files in:
+      /home/tatiana/anaconda3/lib
+    runtime library [libtiff.so.5] in /usr/lib/x86_64-linux-gnu may be hidden by files in:
+      /home/tatiana/anaconda3/lib
+    runtime library [libfreetype.so.6] in /usr/lib/x86_64-linux-gnu may be hidden by files in:
+      /home/tatiana/anaconda3/lib
+    runtime library [libexpat.so.1] in /usr/lib/x86_64-linux-gnu may be hidden by files in:
+      /home/tatiana/anaconda3/lib
+    runtime library [libxml2.so.2] in /usr/lib/x86_64-linux-gnu may be hidden by files in:
+      /home/tatiana/anaconda3/lib
+
+  Some of these libraries may not be found correctly.
+
+
+-- Generating done
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    PYTHON_INCLUDE_DIR
+    PYTHON_LIBRARY
+
+
+-- Build files have been written to: /home/tatiana/car-detect/build
+####
+#### Running command: "make -j4 -l4" in "/home/tatiana/car-detect/build"
+####
+Scanning dependencies of target _car_detect_generate_messages_check_deps_DimensionsWithCovariance
+Scanning dependencies of target geometry_msgs_generate_messages_py
+Scanning dependencies of target std_msgs_generate_messages_py
+Scanning dependencies of target _car_detect_generate_messages_check_deps_TrackedObject
+[  0%] Built target std_msgs_generate_messages_py
+[  0%] Built target geometry_msgs_generate_messages_py
+Scanning dependencies of target tf2_msgs_generate_messages_nodejs
+Scanning dependencies of target nodelet_generate_messages_nodejs
+[  0%] Built target nodelet_generate_messages_nodejs
+[  0%] Built target tf2_msgs_generate_messages_nodejs
+Scanning dependencies of target dynamic_reconfigure_gencfg
+Scanning dependencies of target std_msgs_generate_messages_cpp
+[  0%] Built target _car_detect_generate_messages_check_deps_TrackedObject
+[  0%] Built target dynamic_reconfigure_gencfg
+[  0%] Built target _car_detect_generate_messages_check_deps_DimensionsWithCovariance
+[  0%] Built target std_msgs_generate_messages_cpp
+Scanning dependencies of target geometry_msgs_generate_messages_cpp
+Scanning dependencies of target sensor_msgs_generate_messages_eus
+Scanning dependencies of target actionlib_msgs_generate_messages_cpp
+[  0%] Built target geometry_msgs_generate_messages_cpp
+Scanning dependencies of target actionlib_generate_messages_nodejs
+[  0%] Built target sensor_msgs_generate_messages_eus
+[  0%] Built target actionlib_msgs_generate_messages_cpp
+Scanning dependencies of target sensor_msgs_generate_messages_cpp
+[  0%] Built target actionlib_generate_messages_nodejs
+Scanning dependencies of target geometry_msgs_generate_messages_lisp
+[  0%] Built target sensor_msgs_generate_messages_cpp
+Scanning dependencies of target std_msgs_generate_messages_lisp
+Scanning dependencies of target bond_generate_messages_nodejs
+[  0%] Built target geometry_msgs_generate_messages_lisp
+Scanning dependencies of target dynamic_reconfigure_generate_messages_eus
+[  0%] Built target std_msgs_generate_messages_lisp
+[  0%] Built target bond_generate_messages_nodejs
+Scanning dependencies of target pcl_msgs_generate_messages_py
+[  0%] Built target dynamic_reconfigure_generate_messages_eus
+Scanning dependencies of target pcl_msgs_generate_messages_nodejs
+Scanning dependencies of target std_srvs_generate_messages_nodejs
+[  0%] Built target pcl_msgs_generate_messages_py
+[  0%] Built target pcl_msgs_generate_messages_nodejs
+Scanning dependencies of target nodelet_generate_messages_py
+[  0%] Built target std_srvs_generate_messages_nodejs
+Scanning dependencies of target roscpp_generate_messages_cpp
+Scanning dependencies of target rosgraph_msgs_generate_messages_nodejs
+[  0%] Built target nodelet_generate_messages_py
+Scanning dependencies of target dynamic_reconfigure_generate_messages_nodejs
+[  0%] Built target roscpp_generate_messages_cpp
+Scanning dependencies of target sensor_msgs_generate_messages_nodejs
+[  0%] Built target rosgraph_msgs_generate_messages_nodejs
+[  0%] Built target dynamic_reconfigure_generate_messages_nodejs
+Scanning dependencies of target nodelet_generate_messages_lisp
+[  0%] Built target sensor_msgs_generate_messages_nodejs
+Scanning dependencies of target bond_generate_messages_py
+Scanning dependencies of target bond_generate_messages_cpp
+[  0%] Built target nodelet_generate_messages_lisp
+Scanning dependencies of target std_srvs_generate_messages_lisp
+[  0%] Built target bond_generate_messages_cpp
+[  0%] Built target bond_generate_messages_py
+Scanning dependencies of target bond_generate_messages_lisp
+[  0%] Built target std_srvs_generate_messages_lisp
+Scanning dependencies of target topic_tools_generate_messages_cpp
+Scanning dependencies of target nodelet_generate_messages_eus
+Scanning dependencies of target topic_tools_generate_messages_eus
+[  0%] Built target bond_generate_messages_lisp
+[  0%] Built target nodelet_generate_messages_eus
+[  0%] Built target topic_tools_generate_messages_cpp
+[  0%] Built target topic_tools_generate_messages_eus
+Scanning dependencies of target bond_generate_messages_eus
+Scanning dependencies of target geometry_msgs_generate_messages_nodejs
+Scanning dependencies of target roscpp_generate_messages_eus
+[  0%] Built target bond_generate_messages_eus
+Scanning dependencies of target geometry_msgs_generate_messages_eus
+[  0%] Built target roscpp_generate_messages_eus
+Scanning dependencies of target std_msgs_generate_messages_eus
+[  0%] Built target geometry_msgs_generate_messages_nodejs
+[  0%] Built target geometry_msgs_generate_messages_eus
+Scanning dependencies of target pcl_msgs_generate_messages_eus
+[  0%] Built target std_msgs_generate_messages_eus
+Scanning dependencies of target pcl_ros_gencfg
+Scanning dependencies of target nodelet_generate_messages_cpp
+[  0%] Built target pcl_ros_gencfg
+[  0%] Built target pcl_msgs_generate_messages_eus
+[  0%] Built target nodelet_generate_messages_cpp
+Scanning dependencies of target tf2_msgs_generate_messages_eus
+Scanning dependencies of target dynamic_reconfigure_generate_messages_lisp
+Scanning dependencies of target roscpp_generate_messages_lisp
+[  0%] Built target tf2_msgs_generate_messages_eus
+Scanning dependencies of target dynamic_reconfigure_generate_messages_cpp
+[  0%] Built target dynamic_reconfigure_generate_messages_lisp
+[  0%] Built target roscpp_generate_messages_lisp
+Scanning dependencies of target roscpp_generate_messages_py
+[  0%] Built target dynamic_reconfigure_generate_messages_cpp
+Scanning dependencies of target rosgraph_msgs_generate_messages_eus
+[  0%] Built target roscpp_generate_messages_py
+Scanning dependencies of target actionlib_generate_messages_cpp
+Scanning dependencies of target pcl_msgs_generate_messages_lisp
+[  0%] Built target rosgraph_msgs_generate_messages_eus
+Scanning dependencies of target rosgraph_msgs_generate_messages_py
+[  0%] Built target actionlib_generate_messages_cpp
+[  0%] Built target pcl_msgs_generate_messages_lisp
+Scanning dependencies of target tf_generate_messages_lisp
+[  0%] Built target rosgraph_msgs_generate_messages_py
+Scanning dependencies of target sensor_msgs_generate_messages_py
+[  0%] Built target tf_generate_messages_lisp
+Scanning dependencies of target roscpp_generate_messages_nodejs
+Scanning dependencies of target rosgraph_msgs_generate_messages_lisp
+[  0%] Built target sensor_msgs_generate_messages_py
+[  0%] Built target roscpp_generate_messages_nodejs
+Scanning dependencies of target nodelet_topic_tools_gencfg
+Scanning dependencies of target pcl_msgs_generate_messages_cpp
+[  0%] Built target rosgraph_msgs_generate_messages_lisp
+Scanning dependencies of target std_srvs_generate_messages_cpp
+[  0%] Built target nodelet_topic_tools_gencfg
+[  0%] Built target pcl_msgs_generate_messages_cpp
+Scanning dependencies of target std_srvs_generate_messages_eus
+Scanning dependencies of target tf_generate_messages_cpp
+[  0%] Built target std_srvs_generate_messages_eus
+[  0%] Built target std_srvs_generate_messages_cpp
+Scanning dependencies of target topic_tools_generate_messages_lisp
+[  0%] Built target tf_generate_messages_cpp
+Scanning dependencies of target topic_tools_generate_messages_nodejs
+Scanning dependencies of target sensor_msgs_generate_messages_lisp
+[  0%] Built target topic_tools_generate_messages_lisp
+Scanning dependencies of target topic_tools_generate_messages_py
+[  0%] Built target topic_tools_generate_messages_nodejs
+[  0%] Built target sensor_msgs_generate_messages_lisp
+Scanning dependencies of target actionlib_msgs_generate_messages_nodejs
+[  0%] Built target topic_tools_generate_messages_py
+Scanning dependencies of target tf2_msgs_generate_messages_py
+Scanning dependencies of target tf_generate_messages_eus
+[  0%] Built target actionlib_msgs_generate_messages_nodejs
+Scanning dependencies of target tf_generate_messages_py
+[  0%] Built target tf2_msgs_generate_messages_py
+Scanning dependencies of target actionlib_generate_messages_eus
+[  0%] Built target tf_generate_messages_eus
+Scanning dependencies of target actionlib_generate_messages_lisp
+[  0%] Built target actionlib_generate_messages_eus
+[  0%] Built target tf_generate_messages_py
+Scanning dependencies of target actionlib_msgs_generate_messages_eus
+[  0%] Built target actionlib_generate_messages_lisp
+Scanning dependencies of target dynamic_reconfigure_generate_messages_py
+Scanning dependencies of target actionlib_generate_messages_py
+[  0%] Built target actionlib_msgs_generate_messages_eus
+Scanning dependencies of target rosgraph_msgs_generate_messages_cpp
+[  0%] Built target actionlib_generate_messages_py
+[  0%] Built target dynamic_reconfigure_generate_messages_py
+Scanning dependencies of target actionlib_msgs_generate_messages_lisp
+[  0%] Built target rosgraph_msgs_generate_messages_cpp
+Scanning dependencies of target tf2_msgs_generate_messages_cpp
+Scanning dependencies of target actionlib_msgs_generate_messages_py
+[  0%] Built target actionlib_msgs_generate_messages_lisp
+[  0%] Built target tf2_msgs_generate_messages_cpp
+[  0%] Built target actionlib_msgs_generate_messages_py
+Scanning dependencies of target tf2_msgs_generate_messages_lisp
+Scanning dependencies of target car_detect_gencfg
+Scanning dependencies of target std_msgs_generate_messages_nodejs
+[  0%] Built target tf2_msgs_generate_messages_lisp
+Scanning dependencies of target std_srvs_generate_messages_py
+[  5%] Generating dynamic reconfigure files from cfg/general.cfg: /home/tatiana/car-detect/devel/include/car_detect/generalConfig.h /home/tatiana/car-detect/devel/lib/python2.7/dist-packages/car_detect/cfg/generalConfig.py
+[  5%] Built target std_msgs_generate_messages_nodejs
+Scanning dependencies of target tf_generate_messages_nodejs
+[  5%] Built target std_srvs_generate_messages_py
+Scanning dependencies of target car_detect_generate_messages_py
+[  5%] Built target tf_generate_messages_nodejs
+Scanning dependencies of target car_detect_generate_messages_cpp
+[ 21%] Built target car_detect_generate_messages_py
+Scanning dependencies of target car_detect_generate_messages_lisp
+Scanning dependencies of target car_detect_generate_messages_eus
+[ 31%] Built target car_detect_generate_messages_cpp
+Traceback (most recent call last):
+  File "/home/tatiana/car-detect/src/car_detect/cfg/general.cfg", line 4, in <module>
+    from dynamic_reconfigure.parameter_generator_catkin import *
+  File "/opt/ros/lunar/lib/python2.7/dist-packages/dynamic_reconfigure/__init__.py", line 38, in <module>
+    import roslib
+  File "/opt/ros/lunar/lib/python2.7/dist-packages/roslib/__init__.py", line 50, in <module>
+[ 42%] Built target car_detect_generate_messages_lisp
+    from roslib.launcher import load_manifest
+  File "/opt/ros/lunar/lib/python2.7/dist-packages/roslib/launcher.py", line 42, in <module>
+    import rospkg
+ModuleNotFoundError: No module named 'rospkg'
+[ 57%] Built target car_detect_generate_messages_eus
+Scanning dependencies of target car_detect_generate_messages_nodejs
+car_detect/CMakeFiles/car_detect_gencfg.dir/build.make:63: recipe for target '/home/tatiana/car-detect/devel/include/car_detect/generalConfig.h' failed
+make[2]: *** [/home/tatiana/car-detect/devel/include/car_detect/generalConfig.h] Error 1
+CMakeFiles/Makefile2:3259: recipe for target 'car_detect/CMakeFiles/car_detect_gencfg.dir/all' failed
+make[1]: *** [car_detect/CMakeFiles/car_detect_gencfg.dir/all] Error 2
+make[1]: *** Waiting for unfinished jobs....
+[ 68%] Built target car_detect_generate_messages_nodejs
+Makefile:138: recipe for target 'all' failed
+make: *** [all] Error 2
+Invoking "make -j4 -l4" failed
+

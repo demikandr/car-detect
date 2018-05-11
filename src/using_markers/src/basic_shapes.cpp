@@ -5,12 +5,12 @@
 
 
 ros::Publisher marker_pub;
-uint32_t shape = visualization_msgs::Marker::CUBE;
+uint32_t shape = visualization_msgs::Marker::LINE_LIST;
 
 void bboxCallback(const car_detect::TrackedObjectsConstPtr tracked_objects)
    {
 
-      car_detect::TrackedObjects objects = *tracked_object;
+      car_detect::TrackedObjects objects = *tracked_objects;
 
 
       for (int i = 0; i < objects.trackedObjects.size(); ++i) {
@@ -23,21 +23,101 @@ void bboxCallback(const car_detect::TrackedObjectsConstPtr tracked_objects)
         marker.type = shape;
         marker.action = visualization_msgs::Marker::ADD;
 
-        marker.pose.position.x = object.pose.pose.position.x;
-        marker.pose.position.y = object.pose.pose.position.y;
-        marker.pose.position.z = object.pose.pose.position.z;
-        // marker.pose.position.x = 0;
-        // marker.pose.position.y = 0;
-        // marker.pose.position.z = 0;
-        marker.pose.orientation.x = 0.0;
-        marker.pose.orientation.y = 0.0;
-        marker.pose.orientation.z = 0.0;
-        marker.pose.orientation.w = 0.0;
+        geometry_msgs::Point p1;
+        geometry_msgs::Point p2;
+        geometry_msgs::Point p3;
+        geometry_msgs::Point p4;
+        geometry_msgs::Point p5;
+        geometry_msgs::Point p6;
+        geometry_msgs::Point p7;
+        geometry_msgs::Point p8;
 
-        // Set the scale of the marker -- 1x1x1 here means 1m on a side
-        marker.scale.x = object.dims.dimensions.x;
-        marker.scale.y = object.dims.dimensions.y;
-        marker.scale.z = object.dims.dimensions.z;
+        // 1
+        p1.x = object.pose.pose.position.x;
+        p1.y = object.pose.pose.position.y;
+        p1.z = object.pose.pose.position.z;
+        // 2
+        p2.x = object.pose.pose.position.x+object.dims.dimensions.x;
+        p2.y = object.pose.pose.position.y;
+        p2.z = object.pose.pose.position.z;
+        // 3
+        p3.x = object.pose.pose.position.x;
+        p3.y = object.pose.pose.position.y+object.dims.dimensions.y;
+        p3.z = object.pose.pose.position.z;
+        // 4
+        p4.x = object.pose.pose.position.x;
+        p4.y = object.pose.pose.position.y;
+        p4.z = object.pose.pose.position.z+object.dims.dimensions.z;
+        // 5
+        p5.x = object.pose.pose.position.x+object.dims.dimensions.x;
+        p5.y = object.pose.pose.position.y+object.dims.dimensions.y;
+        p5.z = object.pose.pose.position.z;
+        // 6
+        p6.x = object.pose.pose.position.x+object.dims.dimensions.x;
+        p6.y = object.pose.pose.position.y;
+        p6.z = object.pose.pose.position.z+object.dims.dimensions.z;
+        // 7
+        p7.x = object.pose.pose.position.x;
+        p7.y = object.pose.pose.position.y+object.dims.dimensions.y;
+        p7.z = object.pose.pose.position.z+object.dims.dimensions.z;
+        // 8
+        p8.x = object.pose.pose.position.x+object.dims.dimensions.x;
+        p8.y = object.pose.pose.position.y+object.dims.dimensions.y;
+        p8.z = object.pose.pose.position.z+object.dims.dimensions.z;
+
+        marker.points.push_back(p1);
+        marker.points.push_back(p2);
+
+        marker.points.push_back(p1);
+        marker.points.push_back(p3);
+
+        marker.points.push_back(p1);
+        marker.points.push_back(p4);
+
+        marker.points.push_back(p2);
+        marker.points.push_back(p5);
+
+        marker.points.push_back(p2);
+        marker.points.push_back(p6);
+
+        marker.points.push_back(p3);
+        marker.points.push_back(p5);
+
+        marker.points.push_back(p3);
+        marker.points.push_back(p7);
+
+        marker.points.push_back(p4);
+        marker.points.push_back(p6);
+
+        marker.points.push_back(p4);
+        marker.points.push_back(p7);
+
+        marker.points.push_back(p8);
+        marker.points.push_back(p5);
+
+        marker.points.push_back(p8);
+        marker.points.push_back(p6);
+
+        marker.points.push_back(p8);
+        marker.points.push_back(p7);
+
+
+        
+        // marker.pose.position.x = object.pose.pose.position.x;
+        // marker.pose.position.y = object.pose.pose.position.y;
+        // marker.pose.position.z = object.pose.pose.position.z;
+        // // marker.pose.position.x = 0;
+        // // marker.pose.position.y = 0;
+        // // marker.pose.position.z = 0;
+        // marker.pose.orientation.x = 0.0;
+        // marker.pose.orientation.y = 0.0;
+        // marker.pose.orientation.z = 0.0;
+        // marker.pose.orientation.w = 0.0;
+
+        // // Set the scale of the marker -- 1x1x1 here means 1m on a side
+        // marker.scale.x = object.dims.dimensions.x;
+        // marker.scale.y = object.dims.dimensions.y;
+        // marker.scale.z = object.dims.dimensions.z;
         // marker.scale.x = 1.0;
         // marker.scale.y = 1.0;
         // marker.scale.z = 1.0;
