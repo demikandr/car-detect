@@ -57,7 +57,7 @@ void callback(const Clusterizer& clusterizer, const sensor_msgs::PointCloud2Cons
 
     pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL> cloud;
     pcl::fromROSMsg(*input, cloud);
-
+    std::cerr << cloud.size() << std::endl;
     //    pcl::
     const pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL> orderedCloud  = clusterizer.restoreOrder(cloud);
     auto clusterization = clusterizer.clusterize(orderedCloud);

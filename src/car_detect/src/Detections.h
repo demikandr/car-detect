@@ -103,6 +103,14 @@ public:
                 detections[pointToCluster[i] - 2].add(cloud[i]);
             }
         }
+        for (const auto detection: detections) {
+            assert(detection.initialized);
+            assert(detection.xMax > detection.xMin + 1e-2);
+            assert(detection.yMax >= detection.yMin);
+            assert(detection.yMax > detection.yMin+ 1e-2);
+            assert(detection.zMax >= detection.zMin);
+            assert(detection.zMax > detection.zMin+ 1e-2);
+        }
     }
     boost::optional<int> findClosestDetectionIdxO(const BBox&  detection, const float threshold=0.5) const {
         assert(threshold > 0);
@@ -111,7 +119,15 @@ public:
         for (int i = 0; i < detections.size(); ++i) {
             float IOU = detection.getIOU(detections[i]);
             if (IOU > maxIOU) {
-                maxIOU = IOU;
+
+        for (const auto detection: detections) {
+            assert(detection.initialized);
+            assert(detection.xMax > detection.xMin);
+            assert(detection.yMax >= detection.yMin);
+            assert(detection.yMax > detection.yMin);
+            assert(detection.zMax >= detection.zMin);
+            assert(detection.zMax > detection.zMin);
+        } maxIOU = IOU;
                 closestDetectionIdx = i;
             }
         }

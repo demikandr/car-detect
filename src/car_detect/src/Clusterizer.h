@@ -124,9 +124,12 @@ public:
         return std::make_pair(clusters, clustersNumber);
     }
 
-    void colourPoint(pcl::PointXYZRGB& point, const int cluster) const {
+    void colourPoint(pcl::PointXYZRGB& point, const int cluster, const std::vector<bool>& mask) const {
         if (cluster == 0) {
             point.r = 255;
+        } else if (mask[cluster] == false) {
+            point.r = 255;
+            point.g = 255;
         } else {
             point.r = cluster * 53 % 256;
             point.g = 100 + cluster * 29 % 256;
@@ -142,7 +145,7 @@ public:
         pcl::PointCloud<pcl::PointXYZRGB> coloured_cloud;
         pcl::copyPointCloud(cloud, coloured_cloud);
         for (int i = 0; i < coloured_cloud.size(); ++i) {
-            colourPoint(coloured_cloud[i], clusters[i]);
+            colourPoint(coloured_cloud[i], clusters[i], mask);
         }
 
         ROS_DEBUG("end colourClusters");
@@ -195,7 +198,7 @@ public:
             mask.push_back(std::max(detection.zMax - detection.zMax,
                                     std::max(detection.yMax - detection.yMin, detection.xMax - detection.xMin)) < config.detections_filter_upper_bound);
         }
-        std::vector<bool> mask(detections.detections.size() + 2, true);
+//        std::vector<bool> mask(detections.detections.size() + 2, true);
         return mask;
     }
 };
