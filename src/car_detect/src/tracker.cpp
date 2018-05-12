@@ -10,14 +10,73 @@
 #include<algorithm>
 #include "CylindricProjection.h"
 #include "ConfigWrapper.h"
-#include <car_detect/TrackedObject.h>
-#include <queue>
+#include <car_detect/TrackedObjects.h>
+#include <deque>
 #include <tf/tfMessage.h>
+#include <pcl_ros/transforms.h>
 #include "Clusterizer.h"
+#include <pcl_ros/impl/transforms.hpp>
+#include <boost/optional.hpp>
 
 // А потом сохранять box-
 std::string version="0.004";
 
+
+std::deque<Detections> history;
+
+int maxHistorySize = 5;
+
+
+void addDetectionsToHistory(const Detections& detections) {
+    assert(maxHistorySize > 0);
+    if (history.size() == maxHistorySize) {
+        history.pop_front();
+    }
+    history.push_back(detections);
+}
+
+Detections getDetectionsFromHistory() {
+    assert(!history.empty());
+    for (const BBox& detection: history.back().detections) {
+        std::vector<BBox> similarDetections;
+        for (const Detections oldDetections: history) {
+            boost::optional<BBox> closestBBox = oldDetections.findClosestDetectionO(detection);
+            if (closestBBox) {
+                similarDetections.push_back(detection);
+            }
+        }
+//        if len(similarDetections )
+    }
+}
+
+
+void callback(const Clusterizer& clusterizer, const sensor_msgs::PointCloud2ConstPtr& input)
+{
+
+    // Create a container for the data.
+
+    pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL> cloud;
+    pcl::fromROSMsg(*input, cloud);
+    //    pcl::
+    const pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL> orderedCloud  = clusterizer.restoreOrder(cloud);
+    auto clusterization = clusterizer.clusterize(orderedCloud);
+    const std::vector<int> clusters = clusterization.first;
+    const int clustersNumber = clusterization.second;
+    // ATTENTION! CHANGE COORDINATE SYSTEM
+    pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL> globalCoordsCloud;
+    pcl_ros::transformPointCloud(orderedCloud, globalCoordsCloud, clusterizer.transform);
+    Detections detections(globalCoordsCloud, clusters, clustersNumber);
+    std::vector<bool> mask = clusterizer.filterDetections(detections);
+
+    pcl::PointCloud<pcl::PointXYZRGBA> colored_cloud = clusterizer.colourClusters(globalCoordsCloud, clusters, mask);
+    //        std::cerr << cloud.points[15].x <<  '\t' << cloud.points[15].y << '\t' << cloud.points[15].z << '\t' << cloud.points.size() << std::endl;
+    //        std::cerr << cloud.points[30015].x <<  '\t' << cloud.points[30015].y << '\t' << cloud.points[30015].z << '\t' << cloud.points.size() << std::endl;
+    sensor_msgs::PointCloud2 output;
+    pcl::toROSMsg(colored_cloud, output);
+    clusterizer.pub.publish(output);
+    car_detect::TrackedObjects trackedObjects = detections.getTrackedObjects(mask);
+    clusterizer.bboxPub.publish(trackedObjects);
+}
 
 int
 main (int argc, char** argv)
@@ -33,12 +92,13 @@ main (int argc, char** argv)
     std::cerr << "version" << version << std::endl;
     // Create a ROS subscriber for the input point cloud
 
-    ros::Subscriber sub = nh.subscribe("input", 1, &Clusterizer::operator(), &clusterizer);
+    std::function<void(const sensor_msgs::PointCloud2ConstPtr&)> callback_ = [&](const sensor_msgs::PointCloud2ConstPtr& input){callback(clusterizer, input);};
+    ros::Subscriber sub = nh.subscribe("input", 1, &std::function<void(const sensor_msgs::PointCloud2ConstPtr&)>::operator(), &callback_);
     ros::Subscriber subOdometry = nh.subscribe("tf", 1, &Clusterizer::updateOdometry, &clusterizer);
 
     // Create a ROS publisher for the output point cloud
     clusterizer.pub = nh.advertise<sensor_msgs::PointCloud2> ("output", 1000);
-    clusterizer.bboxPub = nh.advertise<car_detect::TrackedObject>("/tracker_fast/object", 1000);
+    clusterizer.bboxPub = nh.advertise<car_detect::TrackedObjects>("/tracker_fast/object", 1000);
     // Spin
     ros::spin ();
 }

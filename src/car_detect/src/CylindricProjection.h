@@ -33,11 +33,27 @@ public:
             for (int j = 0; j < 32; ++j) {
                 if (mask[i][j] == 1) {
                     int pointIdx = indices[i][j];
-                    for (int k = 1; k < 15; ++k) { // TODO(demikandr) make a parameter
-                        int leftIdx = indices[(i + 3000 - k) % 3000][j];
-                        int rightIdx = indices[(i + k) % 3000][j];
-                        edges[pointIdx].push_back(leftIdx);
-                        edges[pointIdx].push_back(rightIdx);
+                    {
+                        int k = 1;
+                        while (k < 30) {
+                            int leftIdx = indices[(i + 3000 - k) % 3000][j];
+                            if (leftIdx >= 0) {
+                                edges[pointIdx].push_back(leftIdx);
+                                break;
+                            }
+                            k += 1;
+                        }
+                    }
+                    {
+                        int k = 1;
+                        while (k < 30) {
+                            int rightIdx = indices[(i + k) % 3000][j];
+                            if (rightIdx >= 0) {
+                                edges[pointIdx].push_back(rightIdx);
+                                break;
+                            }
+                            k += 1;
+                        }
                     }
                     for (int k = 1; k < 3; ++k) {
                         int lowerIdx = indices[i][(j + 32 - k) % 32];

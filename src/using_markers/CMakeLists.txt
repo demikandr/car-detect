@@ -1,22 +1,18 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(car_detect)
+project(using_markers)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++17)
-add_compile_options(-O2)
+# add_compile_options(-std=c++11)
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  std_msgs
-  geometry_msgs
-  message_generation
-  rospy
   roscpp
-  pcl_conversions
-  pcl_ros
-  dynamic_reconfigure
+  visualization_msgs
+  car_detect
 )
+
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
@@ -24,7 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-catkin_python_setup()
+# catkin_python_setup()
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -49,17 +45,13 @@ catkin_python_setup()
 ##     and list every .msg/.srv/.action file to be processed
 ##   * uncomment the generate_messages entry below
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
-generate_dynamic_reconfigure_options (
-  cfg/general.cfg
-)
 
 ## Generate messages in the 'msg' folder
-add_message_files(
-  FILES
-  DimensionsWithCovariance.msg
-  TrackedObject.msg
-  TrackedObjects.msg
-)
+# add_message_files(
+#   FILES
+#   Message1.msg
+#   Message2.msg
+# )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -76,13 +68,10 @@ add_message_files(
 # )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
-  DEPENDENCIES
-  std_msgs  # Or other packages containing msgs
-  geometry_msgs
-)
-catkin_package(CATKIN_DEPENDS message_runtime std_msgs geometry_msgs rospy roscpp pcl_conversions pcl_ros)
-catkin_install_python(PROGRAMS bin/tracker DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+# generate_messages(
+#   DEPENDENCIES
+#   visualization_msgs
+# )
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -114,9 +103,9 @@ catkin_install_python(PROGRAMS bin/tracker DESTINATION ${CATKIN_PACKAGE_BIN_DEST
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS src
-#  LIBRARIES car_detect
-#  CATKIN_DEPENDS roscpp rospy std_msgs generate_messages
+#  INCLUDE_DIRS include
+#  LIBRARIES using_markers
+#  CATKIN_DEPENDS roscpp visualization_msgs
 #  DEPENDS system_lib
 )
 
@@ -127,13 +116,13 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
- include
- ${catkin_INCLUDE_DIRS}
+# include
+  ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/car_detect.cpp
+#   src/${PROJECT_NAME}/using_markers.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -144,8 +133,8 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(tracker_fast src/tracker.cpp src/CylindricProjection.cpp src/CylindricProjection.h src/Utils.h src/Detections.cpp src/Detections.h src/ConfigWrapper.h src/Clusterizer.h)
-add_dependencies(tracker_fast ${PROJECT_NAME}_gencfg)
+# add_executable(${PROJECT_NAME}_node src/using_markers_node.cpp)
+
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -154,12 +143,12 @@ add_dependencies(tracker_fast ${PROJECT_NAME}_gencfg)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-add_dependencies(tracker_fast ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(tracker_fast
-  ${catkin_LIBRARIES}
-)
+# target_link_libraries(${PROJECT_NAME}_node
+#   ${catkin_LIBRARIES}
+# )
 
 #############
 ## Install ##
@@ -176,34 +165,47 @@ target_link_libraries(tracker_fast
 # )
 
 ## Mark executables and/or libraries for installation
-install(TARGETS tracker_fast
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
+# install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_node
+#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+# )
 
 ## Mark cpp header files for installation
-#install(DIRECTORY include/${PROJECT_NAME}/
-#  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#  FILES_MATCHING PATTERN "*.h"
-#  PATTERN ".svn" EXCLUDE
-#)
+# install(DIRECTORY include/${PROJECT_NAME}/
+#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+#   FILES_MATCHING PATTERN "*.h"
+#   PATTERN ".svn" EXCLUDE
+# )
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
-install(FILES
-  launch/launch.launch
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-)
+# install(FILES
+#   # myfile1
+#   # myfile2
+#   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+# )
 
 #############
 ## Testing ##
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_car_detect.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_using_markers.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+
+add_executable(basic_shapes src/basic_shapes.cpp)
+
+add_dependencies(basic_shapes ${car_detect_EXPORTED_TARGETS})
+target_link_libraries(basic_shapes ${catkin_LIBRARIES})
+install(TARGETS basic_shapes
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+      RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+      )
+      
+target_link_libraries(basic_shapes ${catkin_LIBRARIES})
