@@ -62,7 +62,7 @@ public:
     }
     void add(const velodyne_pointcloud::PointOffsetIRL& point) {
         if (!initialized) {
-             init(point.z, point.y, point.z);
+             init(point.x, point.y, point.z);
         } else {
             float x = point.x,
                     y = point.y,
@@ -80,9 +80,9 @@ public:
     car_detect::TrackedObject getTrackedObject() const {
         car_detect::TrackedObject trackedObject;
 
-        trackedObject.pose.pose.position.x = (xMin + xMax) / 2;
-        trackedObject.pose.pose.position.y = (yMin + yMax) / 2;
-        trackedObject.pose.pose.position.z = (zMin + zMax) / 2;
+        trackedObject.pose.pose.position.x = xMin;
+        trackedObject.pose.pose.position.y = yMin;
+        trackedObject.pose.pose.position.z = zMin;
         trackedObject.dims.dimensions.x = (xMax - xMin);
         trackedObject.dims.dimensions.y = (yMax - yMin);
         trackedObject.dims.dimensions.z = (zMax - zMin);
@@ -105,11 +105,12 @@ public:
         }
         for (const auto detection: detections) {
             assert(detection.initialized);
-            assert(detection.xMax > detection.xMin + 1e-2);
+            assert(detection.xMax >= detection.xMin);
+//            assert(detection.xMax > detection.xMin + 1e-2);
             assert(detection.yMax >= detection.yMin);
-            assert(detection.yMax > detection.yMin+ 1e-2);
+//            assert(detection.yMax > detection.yMin+ 1e-2);
             assert(detection.zMax >= detection.zMin);
-            assert(detection.zMax > detection.zMin+ 1e-2);
+//            assert(detection.zMax > detection.zMin+ 1e-2);
         }
     }
     boost::optional<int> findClosestDetectionIdxO(const BBox&  detection, const float threshold=0.5) const {
@@ -122,11 +123,12 @@ public:
 
         for (const auto detection: detections) {
             assert(detection.initialized);
-            assert(detection.xMax > detection.xMin);
+            assert(detection.xMax >= detection.xMin);
+//            assert(detection.xMax > detection.xMin);
             assert(detection.yMax >= detection.yMin);
-            assert(detection.yMax > detection.yMin);
+//            assert(detection.yMax > detection.yMin);
             assert(detection.zMax >= detection.zMin);
-            assert(detection.zMax > detection.zMin);
+//            assert(detection.zMax > detection.zMin);
         } maxIOU = IOU;
                 closestDetectionIdx = i;
             }
@@ -146,10 +148,12 @@ public:
             return {};
         }
     }
-    car_detect::TrackedObjects getTrackedObjects() const {
+    car_detect::TrackedObjects getTrackedObjects(const std::vector<bool> mask) const {
         car_detect::TrackedObjects trackedObjects;
-        for (const BBox& bbox: detections) {
-            trackedObjects.trackedObjects.push_back(bbox.getTrackedObject());
+        for (int i = 0; i < detections.size(); ++i) {
+            if (mask[i+2]) {
+                trackedObjects.trackedObjects.push_back(detections[i].getTrackedObject());
+            }
         }
         return trackedObjects;
     }

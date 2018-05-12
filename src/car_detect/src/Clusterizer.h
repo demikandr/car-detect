@@ -124,12 +124,30 @@ public:
         return std::make_pair(clusters, clustersNumber);
     }
 
-    void colourPoint(pcl::PointXYZRGB& point, const int cluster, const std::vector<bool>& mask) const {
-        if (cluster == 0) {
+    void colourPoint(pcl::PointXYZRGBA& point, const int cluster, const std::vector<bool>& mask) const {
+        if (cluster == 0) { // nothing is found
+
             point.r = 255;
+            if (config.show_no_detects) {
+                point.a = 255;
+            } else {
+                point.a = 1;
+            }
         } else if (mask[cluster] == false) {
             point.r = 255;
             point.g = 255;
+            if (config.show_false_detects) {
+                point.a = 255;
+            } else {
+                point.a = 1;
+            }
+        } else if (cluster == 1) {
+            point.g = 255;
+            if (config.show_ground) {
+                point.a = 255;
+            } else {
+                point.a = 1;
+            }
         } else {
             point.r = cluster * 53 % 256;
             point.g = 100 + cluster * 29 % 256;
@@ -137,12 +155,12 @@ public:
         }
     }
 
-    pcl::PointCloud<pcl::PointXYZRGB> colourClusters(const pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL>& cloud,
+    pcl::PointCloud<pcl::PointXYZRGBA> colourClusters(const pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL>& cloud,
                                                      const std::vector<int>& clusters,
                                                      const std::vector<bool>& mask) const {
         ROS_DEBUG("start colourClusters");
 
-        pcl::PointCloud<pcl::PointXYZRGB> coloured_cloud;
+        pcl::PointCloud<pcl::PointXYZRGBA> coloured_cloud;
         pcl::copyPointCloud(cloud, coloured_cloud);
         for (int i = 0; i < coloured_cloud.size(); ++i) {
             colourPoint(coloured_cloud[i], clusters[i], mask);
@@ -152,7 +170,7 @@ public:
         return coloured_cloud;
     }
 
-    pcl::PointCloud<pcl::PointXYZRGB> colourClusters(const pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL>& cloud,
+    pcl::PointCloud<pcl::PointXYZRGBA> colourClusters(const pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL>& cloud,
                                                      const std::vector<int>& clusters) const {
         const std::vector<bool> mask(cloud.size(), true);
         return colourClusters(cloud, clusters, mask);
@@ -194,9 +212,11 @@ public:
     std::vector<bool> filterDetections(const Detections& detections) const {
         std::vector<bool> mask(2, true);
         for (const BBox& detection: detections.detections) {
-            assert(detection.zMax > detection.zMin);
-            mask.push_back(std::max(detection.zMax - detection.zMax,
-                                    std::max(detection.yMax - detection.yMin, detection.xMax - detection.xMin)) < config.detections_filter_upper_bound);
+            mask.push_back(
+                    (std::max(detection.zMax - detection.zMin,
+                                    std::max(detection.yMax - detection.yMin, detection.xMax - detection.xMin)) < config.detections_filter_upper_bound) and
+                    (std::min(detection.zMax - detection.zMin,
+                                      std::min(detection.yMax - detection.yMin, detection.xMax - detection.xMin)) > config.detections_filter_lower_bound));
         }
 //        std::vector<bool> mask(detections.detections.size() + 2, true);
         return mask;

@@ -68,13 +68,13 @@ void callback(const Clusterizer& clusterizer, const sensor_msgs::PointCloud2Cons
     Detections detections(globalCoordsCloud, clusters, clustersNumber);
     std::vector<bool> mask = clusterizer.filterDetections(detections);
 
-    pcl::PointCloud<pcl::PointXYZRGB> colored_cloud = clusterizer.colourClusters(globalCoordsCloud, clusters, mask);
+    pcl::PointCloud<pcl::PointXYZRGBA> colored_cloud = clusterizer.colourClusters(globalCoordsCloud, clusters, mask);
     //        std::cerr << cloud.points[15].x <<  '\t' << cloud.points[15].y << '\t' << cloud.points[15].z << '\t' << cloud.points.size() << std::endl;
     //        std::cerr << cloud.points[30015].x <<  '\t' << cloud.points[30015].y << '\t' << cloud.points[30015].z << '\t' << cloud.points.size() << std::endl;
     sensor_msgs::PointCloud2 output;
     pcl::toROSMsg(colored_cloud, output);
     clusterizer.pub.publish(output);
-    car_detect::TrackedObjects trackedObjects = detections.getTrackedObjects();
+    car_detect::TrackedObjects trackedObjects = detections.getTrackedObjects(mask);
     clusterizer.bboxPub.publish(trackedObjects);
 }
 
