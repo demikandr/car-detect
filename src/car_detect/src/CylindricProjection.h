@@ -33,20 +33,10 @@ public:
             for (int j = 0; j < 32; ++j) {
                 if (mask[i][j] == 1) {
                     int pointIdx = indices[i][j];
+
                     {
                         int k = 1;
-                        while (k < 30) {
-                            int leftIdx = indices[(i + 3000 - k) % 3000][j];
-                            if (leftIdx >= 0) {
-                                edges[pointIdx].push_back(leftIdx);
-                                break;
-                            }
-                            k += 1;
-                        }
-                    }
-                    {
-                        int k = 1;
-                        while (k < 30) {
+                        while (k < 60) {
                             int rightIdx = indices[(i + k) % 3000][j];
                             if (rightIdx >= 0) {
                                 edges[pointIdx].push_back(rightIdx);

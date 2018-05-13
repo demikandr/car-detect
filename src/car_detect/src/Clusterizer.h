@@ -18,7 +18,7 @@
 
 class Clusterizer {
 public:
-    ros::Publisher pub, bboxPub;
+    ros::Publisher pub, bboxPub, velocityPub;
     ConfigWrapper config;
     std::queue<car_detect::TrackedObjects> history;
     tf::Transform transform;
@@ -47,8 +47,8 @@ public:
         std::vector<int> groundMask(cloud.nPoints);
         const std::vector<std::vector<int>>& mask = cloud.mask;
         const std::vector<std::vector<int>>& indices = cloud.indices;
+        for (size_t j = 0; j < mask[0].size(); ++j) {
         for (size_t i = 0; i < mask.size(); ++i) {
-            for (size_t j = 0; j < mask[i].size(); ++j) {
 //                std::cerr << i << '\t' << j << '\t' << indices[i][j] <<  std::endl;
                 if (mask[i][j] and
                         ((j == 0) or (mask[i][j-1] == 0) or (groundMask[indices[i][j - 1]] == 1) or
@@ -149,9 +149,9 @@ public:
                 point.a = 1;
             }
         } else {
-            point.r = cluster * 53 % 256;
-            point.g = 100 + cluster * 29 % 256;
-            point.b = 200 + cluster * 71 % 256;
+//            point.r = cluster * 53 % 256;
+//            point.g = 100 + cluster * 29 % 256;
+            point.b = 255; // 200 + cluster * 71 % 256;
         }
     }
 
@@ -212,11 +212,18 @@ public:
     std::vector<bool> filterDetections(const Detections& detections) const {
         std::vector<bool> mask(2, true);
         for (const BBox& detection: detections.detections) {
+            std::vector<float> dimensions{
+                                          detection.yMax - detection.yMin, detection.xMax - detection.xMin};
+            std::sort(dimensions.begin(), dimensions.end());
+            dimensions.push_back(detection.zMax - detection.zMin);
             mask.push_back(
-                    (std::max(detection.zMax - detection.zMin,
-                                    std::max(detection.yMax - detection.yMin, detection.xMax - detection.xMin)) < config.detections_filter_upper_bound) and
-                    (std::min(detection.zMax - detection.zMin,
-                                      std::min(detection.yMax - detection.yMin, detection.xMax - detection.xMin)) > config.detections_filter_lower_bound));
+                    (dimensions[0] < config.detections0_filter_upper_bound) and
+                    (dimensions[0] > config.detections0_filter_lower_bound) and
+                    (dimensions[1] < config.detections1_filter_upper_bound) and
+                    (dimensions[1] > config.detections1_filter_lower_bound) and
+                    (dimensions[2] < config.detections_z_filter_upper_bound) and
+                    (dimensions[2] > config.detections_z_filter_lower_bound)
+            );
         }
 //        std::vector<bool> mask(detections.detections.size() + 2, true);
         return mask;

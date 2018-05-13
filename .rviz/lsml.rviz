@@ -8,6 +8,7 @@ Panels:
         - /Status1
         - /PointCloud21
         - /PointCloud22
+        - /Marker2
       Splitter Ratio: 0.5
     Tree Height: 383
   - Class: rviz/Selection
@@ -199,6 +200,14 @@ Visualization Manager:
         basic_shapes: true
       Queue Size: 100
       Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /tracker_fast/velocity
+      Name: Marker
+      Namespaces:
+        velocity: true
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -224,7 +233,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 43.3991776
+      Distance: 14.5083876
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
@@ -239,10 +248,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.555398881
+      Pitch: 0.779795706
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 4.69039917
+      Yaw: 3.88402343
     Saved: ~
 Window Geometry:
   Displays:

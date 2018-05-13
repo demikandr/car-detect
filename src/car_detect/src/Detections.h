@@ -15,23 +15,31 @@
 
 class BBox {
 public:
-    float xMin, xMax;
-    float yMin, yMax;
-    float zMin, zMax;
+    float xMin, xMax, xCenter;
+    float yMin, yMax, yCenter;
+    float zMin, zMax, zCenter;
+    float speed = 0;
+    bool markeredPredok = false;
+    int pointsNumber = 0;
     bool initialized = false;
     BBox init(const float x, const float y, const float z) {
         xMin = x;
         xMax = x;
+        xCenter = x;
         yMin = y;
         yMax = y;
+        yCenter = y;
         zMin = z;
         zMax = z;
+        zCenter = z;
         initialized = true;
+        pointsNumber = 1;
     }
-    BBox(){}
+    BBox() = default;
     BBox(const float xMin, const float yMin, const float zMin,
         const float xMax, const float yMax, const float zMax):
-            xMin(xMin), xMax(xMax), yMin(yMin), yMax(yMax), zMin(zMin), zMax(zMax), initialized(true) {}
+            xMin(xMin), xMax(xMax), yMin(yMin), yMax(yMax), zMin(zMin), zMax(zMax),
+            pointsNumber(-1), initialized(true) {}
     BBox intersect(const BBox& other) const {
         assert(this->intersects(other));
 
@@ -61,9 +69,19 @@ public:
         }
     }
     void add(const velodyne_pointcloud::PointOffsetIRL& point) {
+        assert (point.x < 10000);
+        assert (point.y < 10000);
+        assert (point.z < 10000);
+        assert (point.x > -10000);
+        assert (point.y > -10000);
+        assert (point.z > -10000);
+//        assert (point.x != 0);
+//        assert(point.y != 0);
+//        assert(point.z != 0);
         if (!initialized) {
              init(point.x, point.y, point.z);
         } else {
+            pointsNumber++;
             float x = point.x,
                     y = point.y,
                     z = point.z;
@@ -73,6 +91,9 @@ public:
             xMax = std::max(xMax, x);
             yMax = std::max(yMax, y);
             zMax = std::max(zMax, z);
+            xCenter = xCenter * (pointsNumber - 1) / pointsNumber + x / pointsNumber;
+            yCenter = yCenter * (pointsNumber - 1) / pointsNumber + y / pointsNumber;
+            zCenter = zCenter * (pointsNumber - 1) / pointsNumber + z / pointsNumber;
         }
     }
 
@@ -111,6 +132,12 @@ public:
 //            assert(detection.yMax > detection.yMin+ 1e-2);
             assert(detection.zMax >= detection.zMin);
 //            assert(detection.zMax > detection.zMin+ 1e-2);
+//            assert(detection.xMax != 0);
+//            assert(detection.yMax != 0);
+//            assert(detection.zMax != 0);
+//            assert(detection.xMax != 0);
+//            assert(detection.yMax != 0);
+//            assert(detection.zMax != 0);
         }
     }
     boost::optional<int> findClosestDetectionIdxO(const BBox&  detection, const float threshold=0.5) const {
@@ -120,32 +147,23 @@ public:
         for (int i = 0; i < detections.size(); ++i) {
             float IOU = detection.getIOU(detections[i]);
             if (IOU > maxIOU) {
-
-        for (const auto detection: detections) {
-            assert(detection.initialized);
-            assert(detection.xMax >= detection.xMin);
-//            assert(detection.xMax > detection.xMin);
-            assert(detection.yMax >= detection.yMin);
-//            assert(detection.yMax > detection.yMin);
-            assert(detection.zMax >= detection.zMin);
-//            assert(detection.zMax > detection.zMin);
-        } maxIOU = IOU;
+                 maxIOU = IOU;
                 closestDetectionIdx = i;
             }
         }
-        if (closestDetectionIdx) {
+        if (closestDetectionIdx>=0) {
             return closestDetectionIdx;
         } else {
-            return {};
+            return boost::none;
         }
     }
 
     boost::optional<BBox> findClosestDetectionO(const BBox& detection, const float threshold=0.5) const {
         boost::optional<int> closestDetectionIdx = findClosestDetectionIdxO(detection, threshold);
         if (closestDetectionIdx) {
-            return detections[*closestDetectionIdx];
+            return detections[closestDetectionIdx.get()];
         } else {
-            return {};
+            return boost::none;
         }
     }
     car_detect::TrackedObjects getTrackedObjects(const std::vector<bool> mask) const {
