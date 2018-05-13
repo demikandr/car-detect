@@ -2,8 +2,6 @@
   <node pkg="rosbag" type="play" name="rosbag" required="true" args="-d 5 --loop $(dirname)/../../../data/lsml_task.bag"/>
   <node name="modelvisualisation" pkg="rviz" type="rviz" output="screen" args="-d $(dirname)/../../../.rviz/lsml.rviz" />
   <node name="tracker_fast" pkg="car_detect" type="tracker_fast" args="input:=/Sensor/points output:=/tracker_fast/output" />
-  <node name="tracker_constant" pkg="car_detect" type="tracker"/>
-  <node name="rqt_reconfigure" pkg="rqt_reconfigure" type="rqt_reconfigure"/>
 </launch>
 
  
