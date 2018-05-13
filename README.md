@@ -3,6 +3,8 @@
 # car-detect
 Tracking module for Robot Operating System
 
+![screenshot](https://github.com/demikandr/car-detect/raw/master/sample.png)
+
 ## Installation
 
 * Install ros-lunar-desktop from [that](http://wiki.ros.org/lunar/Installation/Ubuntu) tutorial
@@ -11,4 +13,5 @@ Tracking module for Robot Operating System
 
 ## Usage
 
-Execute `roslaunch car_detect launch.launch`
+Execute `roslaunch using_markers launch.launch`
+
