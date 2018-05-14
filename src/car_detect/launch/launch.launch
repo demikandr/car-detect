@@ -1,7 +1,7 @@
 <launch>
-  <node pkg="rosbag" type="play" name="rosbag" required="true" args="-d 5 --loop $(dirname)/../../../data/lsml_task.bag"/>
-  <node name="modelvisualisation" pkg="rviz" type="rviz" output="screen" args="-d $(dirname)/../../../.rviz/lsml.rviz" />
-  <node name="tracker_fast" pkg="car_detect" type="tracker_fast" args="input:=/Sensor/points output:=/tracker_fast/output" />
+  <node pkg="rosbag" type="play" name="rosbag" required="true" args="-d 5 --loop /home/demikandr/Downloads/kitti/kitti_2011_09_26_drive_0001_synced.bag"/>
+  <node name="modelvisualisation" pkg="rviz" type="rviz" output="screen" args="-d $(dirname)/../../../.rviz/kitti.rviz" />
+  <node name="tracker_fast" pkg="car_detect" type="tracker_fast" args="input:=/kitti/velo/pointcloud output:=/tracker_fast/output" />
 </launch>
 
  

@@ -4,6 +4,7 @@ project(car_detect)
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++17)
 add_compile_options(-O2)
+add_compile_options(-g)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages

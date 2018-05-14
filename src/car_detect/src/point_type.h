@@ -57,26 +57,28 @@
  namespace velodyne_pointcloud
  {
    /** Euclidean Velodyne coordinate, including intensity, ring number and segmentation label. */
- struct PointOffsetIRL {
-     PCL_ADD_POINT4D;                    // quad-word XYZ
-     PCL_ADD_OFFSET4D;
-     float    intensity;                 ///< laser intensity reading
-     uint16_t ring;                      ///< laser ring number
-     EIGEN_MAKE_ALIGNED_OPERATOR_NEW     // ensure proper alignment
- } EIGEN_ALIGN16;
- 
+// struct PointOffsetIRL {
+//     PCL_ADD_POINT4D;                    // quad-word XYZ
+//     PCL_ADD_OFFSET4D;
+//     float    intensity;                 ///< laser intensity reading
+//     uint16_t ring;                      ///< laser ring number
+//     EIGEN_MAKE_ALIGNED_OPERATOR_NEW     // ensure proper alignment
+// } EIGEN_ALIGN16;
+     typedef pcl::PointXYZI PointOffsetIRL;
+
+
  };  // namespace velodyne_pointcloud
  
- 
- POINT_CLOUD_REGISTER_POINT_STRUCT(velodyne_pointcloud::PointOffsetIRL,
-                                   (float, x, x)
-                                   (float, y, y)
-                                   (float, z, z)
-                                   (float, offset_x, offset_x)
-                                   (float, offset_y, offset_y)
-                                   (float, offset_z, offset_z)
-                                   (float, intensity, intensity)
-                                   (uint16_t, ring, ring))
+
+// POINT_CLOUD_REGISTER_POINT_STRUCT(velodyne_pointcloud::PointOffsetIRL,
+//                                   (float, x, x)
+//                                   (float, y, y)
+//                                   (float, z, z)
+//                                   (float, offset_x, offset_x)
+//                                   (float, offset_y, offset_y)
+//                                   (float, offset_z, offset_z)
+//                                   (float, intensity, intensity)
+//                                   (uint16_t, ring, ring))
  
  #endif  // __VELODYNE_POINTCLOUD_POINT_TYPES_H
  

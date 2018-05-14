@@ -27,36 +27,24 @@ public:
     Clusterizer() {
     }
 
-    bool isGroundEdge(const Utils& utils, int i, int j) const {
-        return utils.oxyAngleCos(i, j) > config.alpha_ground;
+    bool isGroundEdge(const velodyne_pointcloud::PointOffsetIRL& x, const velodyne_pointcloud::PointOffsetIRL& y) const {
+        return Utils::oxyAngleCos(x, y) > config.alpha_ground;
     }
-    std::vector<int> markGround(const Utils& utils, const pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL>& cloud) const {
-        ROS_DEBUG("start markGround");
-        std::vector<int> groundMask(cloud.size());
-        for (size_t i = 0; i < cloud.size(); ++i) {
-            if ((utils.isLowestLevel(i) or ((i > 0) && (groundMask[i-1] == 1)))
-                and !utils.isHighestLevel(i) and isGroundEdge(utils, i, i+1) ) { //}} && !groundMask[utils.safe_idx(i-1)]) {
-                groundMask[i] = 1;
-            }
-        }
-        ROS_DEBUG("end markGround");
-        return groundMask;
-    }
-    std::vector<int> markGround(const Utils& utils, const CylindricProjection& cloud) const {
+
+    std::vector<int> markGround(const NCylindricProjection::CylindricProjection& cloud) const {
         ROS_DEBUG("start markGround");
         std::vector<int> groundMask(cloud.nPoints);
         const std::vector<std::vector<int>>& mask = cloud.mask;
-        const std::vector<std::vector<int>>& indices = cloud.indices;
         for (size_t j = 0; j < mask[0].size(); ++j) {
         for (size_t i = 0; i < mask.size(); ++i) {
-//                std::cerr << i << '\t' << j << '\t' << indices[i][j] <<  std::endl;
                 if (mask[i][j] and
-                        ((j == 0) or (mask[i][j-1] == 0) or (groundMask[indices[i][j - 1]] == 1) or
-                        ((i > 0) and groundMask[indices[i-1][j]]) or // TODO(demikandr) case of i == 0
-                        ((i + 1 < mask.size()) and groundMask[indices[i+1][j]])) and // TODO(demikandr) case of i + 1 == mask.size()
-                            ((j < mask[i].size()) and mask[i][j + 1] == 1 and isGroundEdge(utils, indices[i][j], indices[i][j+1])))
-                     { //}} && !groundMask[utils.safe_idx(i-1)]) {
-                    groundMask[indices[i][j]] = 1;
+                        ((j == 0) or (mask[i][j-1] == 0) or (groundMask[NCylindricProjection::toIdx(i,j - 1)] == 1) or
+                        ((i > 0) and groundMask[NCylindricProjection::toIdx(i - 1,j)]) or // TODO(demikandr) case of i == 0
+                        ((i + 1 < mask.size()) and groundMask[NCylindricProjection::toIdx(i + 1,j)])) and // TODO(demikandr) case of i + 1 == mask.size()
+                            (j < mask[i].size()) and
+                                ((j + 1 == mask[0].size()) || (mask[i][j + 1] == 0) || isGroundEdge(NCylindricProjection::toIdx(i,j), NCylindricProjection::toIdx(i,j + 1))))
+                     { //}} && !groundMask[Utils::safe_idx(i-1)]) {
+                    groundMask[NCylindricProjection::toIdx(i,j)] = 1;
                 }
             }
         }
@@ -64,47 +52,52 @@ public:
         return groundMask;
     }
 
-    bool isEdge(const Utils& utils, const int pointIdx1, const int pointIdx2) const {
-        return ((abs(utils.oxyAngleCos(pointIdx1, pointIdx2)) < config.alpha) or (utils.distance(pointIdx1, pointIdx2) < 0.1))
-               and (utils.distance(pointIdx1, pointIdx2) / std::min(utils.l2(pointIdx1), utils.l2(pointIdx2)) < 0.5 / 2.);
+    bool isEdge(const velodyne_pointcloud::PointOffsetIRL& x, const velodyne_pointcloud::PointOffsetIRL& y) const {
+        return ((abs(Utils::oxyAngleCos(x, y)) < config.alpha) or (Utils::distance(x, y) < 0.1))
+               and (Utils::distance(x, y) / std::min(Utils::l2(x), Utils::l2(y)) < 0.5 / 2.);
     }
 
-    int dfs(const int pointIdx,  std::vector<int>* clustersPtr, const std::vector<std::vector<int>>& edges, const int clusterIdx, const Utils& utils) const {
+    int dfs(const int pointIdx,  std::vector<int>* clustersPtr, const std::vector<std::vector<int>>& edges, const int clusterIdx) const {
         std::vector<int>& clusters = *clustersPtr;
 
+//        std::cerr << "Point Idx? " << pointIdx << std::endl;
         clusters[pointIdx] = clusterIdx;
         int clusterSize = 1;
+//        std::cerr << "probably not " << pointIdx << std::endl;
         for (int i = 0; i < edges[pointIdx].size(); ++i) {
             int nextPointIdx = edges[pointIdx][i];
-            if ((nextPointIdx >= 0) && (clusters[nextPointIdx] == 0) && isEdge(utils, pointIdx, nextPointIdx)) {
-                clusterSize += dfs(nextPointIdx, clustersPtr, edges, clusterIdx, utils);
+            if ((nextPointIdx >= 0) && (clusters[nextPointIdx] == 0) && isEdge(pointIdx, nextPointIdx)) {
+                clusterSize += dfs(nextPointIdx, clustersPtr, edges, clusterIdx);
             }
         }
         return clusterSize;
     }
 
-    std::pair<std::vector<int>, int> clusterize(const pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL>& cloud) const {
+    std::pair<std::vector<int>, int> clusterize(const NCylindricProjection::CylindricProjection& cylindricProjection) const {
         ROS_DEBUG("start clusterize");
-        const Utils utils(cloud);
         ROS_DEBUG("start cylindricProjectiionCreation");
-        const CylindricProjection& cylindricProjection(cloud);
         std::vector<std::vector<int>> edges = cylindricProjection.getEdges();
 
-        std::vector<int> clusters = markGround(utils, cylindricProjection); // 0 is not a ground, 1 is a ground
+        std::vector<int> clusters = markGround(cylindricProjection); // 0 is not a ground, 1 is a ground
 
         std::vector<std::vector<int>> visited(cylindricProjection.getScansNumber(), std::vector<int>(cylindricProjection.getScanLength(), 0));
         int nextClusterIdx = 2;
 
-        ROS_DEBUG("start dfs loop");
+        std::cerr << "start dfs loop" << std::endl;
         std::vector<int> clusterSizes(2, -1);
-        for (int i = 0; i < cloud.size(); ++i) {
-            if (clusters[i] == 0) {
-                clusterSizes.push_back(dfs(i, &clusters, edges, nextClusterIdx, utils));
-                nextClusterIdx++;
+        for (int i = 0; i < NCylindricProjection::N_COLUMNS; ++i) {
+            for (int j = 0; j < NCylindricProjection::N_RINGS; ++j) {
+                if (cylindricProjection.mask[i][j]) {
+                    int idx = NCylindricProjection::toIdx(i,j);
+                    if (clusters[idx] == 0) {
+                        clusterSizes.push_back(dfs(idx, &clusters, edges, nextClusterIdx));
+                        nextClusterIdx++;
+                    }
+                }
             }
         }
         // fulter clusters
-        ROS_DEBUG("end dfs loop");
+        std::cerr << "end dfs loop" << std::endl;
         std::vector<int> filteredClusterIndices{0,1};
         int clustersNumber = 2;
         for (int i = 2; i < clusterSizes.size(); ++i) {
@@ -116,7 +109,7 @@ public:
             }
         }
         ROS_INFO("Clusters number %d", clustersNumber);
-        for (int i = 0; i < cloud.size(); ++i) {
+        for (int i = 0; i < clusters.size(); ++i) {
             clusters[i] = filteredClusterIndices[clusters[i]];
         }
 
@@ -149,21 +142,29 @@ public:
                 point.a = 1;
             }
         } else {
-//            point.r = cluster * 53 % 256;
-//            point.g = 100 + cluster * 29 % 256;
-            point.b = 255; // 200 + cluster * 71 % 256;
+            point.r = cluster * 53 % 256;
+            point.g = 100 + cluster * 29 % 256;
+             200 + cluster * 71 % 256;
+//            point.b = 255;
         }
     }
 
-    pcl::PointCloud<pcl::PointXYZRGBA> colourClusters(const pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL>& cloud,
+    pcl::PointCloud<pcl::PointXYZRGBA> colourClusters(const NCylindricProjection::CylindricProjection& cylindricProjection,
                                                      const std::vector<int>& clusters,
                                                      const std::vector<bool>& mask) const {
         ROS_DEBUG("start colourClusters");
 
         pcl::PointCloud<pcl::PointXYZRGBA> coloured_cloud;
-        pcl::copyPointCloud(cloud, coloured_cloud);
-        for (int i = 0; i < coloured_cloud.size(); ++i) {
-            colourPoint(coloured_cloud[i], clusters[i], mask);
+        for (int i = 0; i < NCylindricProjection::N_COLUMNS; ++i) {
+            for (int j = 0; j < NCylindricProjection::N_RINGS; ++j) {
+                if (cylindricProjection.mask[i][j]) {
+                    pcl::PointXYZRGBA point;
+                    point.x = cylindricProjection.cloud[i][j].x;
+                    point.y = cylindricProjection.cloud[i][j].y;
+                    point.z = cylindricProjection.cloud[i][j].z;
+                    colourPoint(point, clusters[i], mask);
+                    coloured_cloud.push_back(point);
+            }
         }
 
         ROS_DEBUG("end colourClusters");
@@ -177,30 +178,7 @@ public:
     }
 
     pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL> restoreOrder(const pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL>& cloud) const {
-        std::vector<velodyne_pointcloud::PointOffsetIRL> buffer{cloud[0]};
-        pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL> orderedCloud(cloud);
-        orderedCloud.clear();
-        for (int i = 1; i < cloud.size(); ++i) {
-            //        std::cerr << i << '\t' << cloud[i].ring << std::endl;
-            if (cloud[i].ring == 1 +  buffer.back().ring) {
-                buffer.push_back(cloud[i]);
-            } else if ((cloud[i].ring > 1 + buffer.back().ring) and (cloud[i].ring > orderedCloud.back().ring)) {
-                //            std::cerr << "O\t" << cloud[i].ring << std::endl;
-                orderedCloud.push_back(cloud[i]);
-            } else {
-                //            std::cerr << "clear buffer" << std::endl;
-                for (velodyne_pointcloud::PointOffsetIRL& point: buffer) {
-                    //                std::cerr <<  "B\t" << point.ring << std::endl;
-                    orderedCloud.push_back(point);
-                }
-                buffer.clear();
-                buffer.push_back(cloud[i]);
-            }
-        }
-        for (velodyne_pointcloud::PointOffsetIRL& point: buffer) {
-            orderedCloud.push_back(point);
-        }
-        return orderedCloud;
+        return cloud;
     }
     void updateOdometry(const tf::tfMessageConstPtr& messagePtr) {
         assert(messagePtr->transforms.size() == 1);
@@ -217,12 +195,13 @@ public:
             std::sort(dimensions.begin(), dimensions.end());
             dimensions.push_back(detection.zMax - detection.zMin);
             mask.push_back(
-                    (dimensions[0] < config.detections0_filter_upper_bound) and
-                    (dimensions[0] > config.detections0_filter_lower_bound) and
-                    (dimensions[1] < config.detections1_filter_upper_bound) and
-                    (dimensions[1] > config.detections1_filter_lower_bound) and
-                    (dimensions[2] < config.detections_z_filter_upper_bound) and
-                    (dimensions[2] > config.detections_z_filter_lower_bound)
+//                    (dimensions[0] < config.detections0_filter_upper_bound) and
+//                    (dimensions[0] > config.detections0_filter_lower_bound) and
+//                    (dimensions[1] < config.detections1_filter_upper_bound) and
+//                    (dimensions[1] > config.detections1_filter_lower_bound) and
+//                    (dimensions[2] < config.detections_z_filter_upper_bound) and
+//                    (dimensions[2] > config.detections_z_filter_lower_bound)
+                true
             );
         }
 //        std::vector<bool> mask(detections.detections.size() + 2, true);

@@ -8,7 +8,6 @@
 #include<iostream>
 #include<string>
 #include<algorithm>
-#include "CylindricProjection.h"
 #include "ConfigWrapper.h"
 #include <car_detect/TrackedObjects.h>
 #include <deque>
@@ -20,6 +19,7 @@
 #include <visualization_msgs/Marker.h>
 
 // А потом сохранять box-
+
 std::string version="0.004";
 
 
@@ -158,41 +158,41 @@ void callback(const Clusterizer& clusterizer, const sensor_msgs::PointCloud2Cons
     pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL> cloud;
     pcl::fromROSMsg(*input, cloud);
     //    pcl::
-    const pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL> orderedCloud  = clusterizer.restoreOrder(cloud);
-    auto clusterization = clusterizer.clusterize(orderedCloud);
+//    const pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL> orderedCloud  = clusterizer.restoreOrder(cloud);
+
+    const NCylindricProjection::CylindricProjection cylindricProjection(cloud);
+    auto clusterization = clusterizer.clusterize(cylindricProjection);
     const std::vector<int> clusters = clusterization.first;
-    const int clustersNumber = clusterization.second;
+//    const int clustersNumber = clusterization.second;
     // ATTENTION! CHANGE COORDINATE SYSTEM
-    pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL> globalCoordsCloud;
+//    pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL> globalCoordsCloud;
 
-    pcl::copyPointCloud(orderedCloud, globalCoordsCloud);
+//    pcl::copyPointCloud(orderedCloud, globalCoordsCloud);
 //    pcl_ros::transformPointCloud(orderedCloud, globalCoordsCloud, clusterizer.transform);
-    Detections detections(globalCoordsCloud, clusters, clustersNumber);
-    addDetectionsToHistory(detections);
-    std::vector<boost::optional<visualization_msgs::Marker>> velocities = getDetectionsFromHistory(clusterizer.config.threshold);
+//    Detections detections(globalCoordsCloud, clusters, clustersNumber);
+//    addDetectionsToHistory(detections);
+//    std::vector<boost::optional<visualization_msgs::Marker>> velocities = getDetectionsFromHistory(clusterizer.config.threshold);
 
-    std::vector<bool> mask = clusterizer.filterDetections(detections);
+//    std::vector<bool> mask = clusterizer.filterDetections(detections);
 
-    pcl::PointCloud<pcl::PointXYZRGBA> colored_cloud = clusterizer.colourClusters(globalCoordsCloud, clusters, mask);
-    //        std::cerr << cloud.points[15].x <<  '\t' << cloud.points[15].y << '\t' << cloud.points[15].z << '\t' << cloud.points.size() << std::endl;
-    //        std::cerr << cloud.points[30015].x <<  '\t' << cloud.points[30015].y << '\t' << cloud.points[30015].z << '\t' << cloud.points.size() << std::endl;
+    pcl::PointCloud<pcl::PointXYZRGBA> colored_cloud = clusterizer.colourClusters(cloud, clusters); //, mask);
     sensor_msgs::PointCloud2 output;
     pcl::toROSMsg(colored_cloud, output);
     clusterizer.pub.publish(output);
-    car_detect::TrackedObjects trackedObjects = detections.getTrackedObjects(mask);
-    clusterizer.bboxPub.publish(trackedObjects);
-    std::cerr << "Start publishing velocities\n";
-    visualization_msgs::Marker marker;
-    marker.action = visualization_msgs::Marker::DELETEALL;
-    clusterizer.velocityPub.publish(marker);
-    for (int i = 0; i < velocities.size(); ++i) {
-        if (mask[i + 2] and velocities[i] and history.back().detections[i].markeredPredok) {
-            std::cerr << i << '\t' << velocities[i]->scale.x
-                    << '\t' << velocities[i]->scale.y
-                    << '\t' << velocities[i]->scale.z << std::endl;
-            clusterizer.velocityPub.publish(velocities[i].get());
-        }
-    }
+//    car_detect::TrackedObjects trackedObjects = detections.getTrackedObjects(mask);
+//    clusterizer.bboxPub.publish(trackedObjects);
+//    std::cerr << "Start publishing velocities\n";
+//    visualization_msgs::Marker marker;
+//    marker.action = visualization_msgs::Marker::DELETEALL;
+//    clusterizer.velocityPub.publish(marker);
+//    for (int i = 0; i < velocities.size(); ++i) {
+//        if (mask[i + 2] and velocities[i] and history.back().detections[i].markeredPredok) {
+//            std::cerr << i << '\t' << velocities[i]->scale.x
+//                    << '\t' << velocities[i]->scale.y
+//                    << '\t' << velocities[i]->scale.z << std::endl;
+//            clusterizer.velocityPub.publish(velocities[i].get());
+//        }
+//    }
 }
 
 int
@@ -202,6 +202,7 @@ main (int argc, char** argv)
     ros::init (argc, argv, "tracker_fast");
     Clusterizer clusterizer;
   // Initialize ROS
+    ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug);
     ROS_DEBUG("Hello Listen DEBUG");
     ROS_INFO("Hello Listen INFO");
     ROS_WARN("Hello Listen WARN");
