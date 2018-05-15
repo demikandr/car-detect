@@ -4,7 +4,6 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/visualization/pcl_visualizer.h>
-#include "Utils.h"
 #include<iostream>
 #include<string>
 #include<algorithm>
@@ -13,10 +12,10 @@
 #include <deque>
 #include <tf/tfMessage.h>
 #include <pcl_ros/transforms.h>
-#include "Clusterizer.h"
 #include <pcl_ros/impl/transforms.hpp>
 #include <boost/optional.hpp>
 #include <visualization_msgs/Marker.h>
+#include "Clusterizer.h"
 
 // А потом сохранять box-
 
@@ -162,7 +161,7 @@ void callback(const Clusterizer& clusterizer, const sensor_msgs::PointCloud2Cons
 
     const NCylindricProjection::CylindricProjection cylindricProjection(cloud);
     auto clusterization = clusterizer.clusterize(cylindricProjection);
-    const std::vector<int> clusters = clusterization.first;
+    const std::vector<std::vector<int>> clusters = clusterization.first;
 //    const int clustersNumber = clusterization.second;
     // ATTENTION! CHANGE COORDINATE SYSTEM
 //    pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL> globalCoordsCloud;
@@ -175,10 +174,14 @@ void callback(const Clusterizer& clusterizer, const sensor_msgs::PointCloud2Cons
 
 //    std::vector<bool> mask = clusterizer.filterDetections(detections);
 
+    std::cerr << "IS it colourClusters?)" << std::endl;
     pcl::PointCloud<pcl::PointXYZRGBA> colored_cloud = clusterizer.colourClusters(cloud, clusters); //, mask);
-    sensor_msgs::PointCloud2 output;
-    pcl::toROSMsg(colored_cloud, output);
-    clusterizer.pub.publish(output);
+
+    std::cerr << "no" << std::endl;
+    ROS_DEBUG("still no");
+//    sensor_msgs::PointCloud2 output;
+//    pcl::toROSMsg(colored_cloud, output);
+//    clusterizer.pub.publish(output);
 //    car_detect::TrackedObjects trackedObjects = detections.getTrackedObjects(mask);
 //    clusterizer.bboxPub.publish(trackedObjects);
 //    std::cerr << "Start publishing velocities\n";
@@ -193,6 +196,7 @@ void callback(const Clusterizer& clusterizer, const sensor_msgs::PointCloud2Cons
 //            clusterizer.velocityPub.publish(velocities[i].get());
 //        }
 //    }
+    std::cerr << "You think it's over, aren't you?)" << std::endl;
 }
 
 int

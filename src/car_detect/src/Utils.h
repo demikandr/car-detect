@@ -9,10 +9,16 @@ namespace Utils {
     }
 
     double oxyAngleCos(velodyne_pointcloud::PointOffsetIRL x, velodyne_pointcloud::PointOffsetIRL y) {
-        pcl::Vector3fMap vec1(x.getVector3fMap());
+        Eigen::Vector3f vec1(x.getVector3fMap());
         Eigen::Vector3f vec2(y.getVector3fMap() - x.getVector3fMap());
         return vec1.dot(vec2) / (vec1.lpNorm<2>()  * vec2.lpNorm<2>() + 0.01);
     }
+
+    double oxyAngle(velodyne_pointcloud::PointOffsetIRL x, velodyne_pointcloud::PointOffsetIRL y) {
+        Eigen::Vector3f vec2(y.getVector3fMap() - x.getVector3fMap());
+        return std::atan2(vec2.z(), std::sqrt((vec2.x() * vec2.x()) + (vec2.y() * vec2.y())));
+    }
+
 
     double distance(const velodyne_pointcloud::PointOffsetIRL& x, const velodyne_pointcloud::PointOffsetIRL& y) {
         Eigen::Vector3f vec2(y.getVector3fMap() - x.getVector3fMap());

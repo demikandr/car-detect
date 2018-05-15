@@ -14,7 +14,6 @@ namespace NCylindricProjection {
     public:
         std::vector<std::vector<velodyne_pointcloud::PointOffsetIRL>> cylindricProjection;
         std::vector<std::vector<int>> mask;
-        int nPoints;
 
         CylindricProjection(const pcl::PointCloud <velodyne_pointcloud::PointOffsetIRL> &cloud);
 
@@ -22,6 +21,12 @@ namespace NCylindricProjection {
         int getScansNumber() const;
 
         int getScanLength() const;
+        inline velodyne_pointcloud::PointOffsetIRL getPointByIdx(int idx) const {
+            assert(idx >= 0);
+            assert(idx <= N_COLUMNS * N_RINGS);
+            assert(mask[idx / N_RINGS][idx % N_RINGS]);
+            return cylindricProjection[idx / N_RINGS][idx % N_RINGS];
+        }
 
 
     };
