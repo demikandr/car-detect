@@ -162,26 +162,24 @@ void callback(const Clusterizer& clusterizer, const sensor_msgs::PointCloud2Cons
     const NCylindricProjection::CylindricProjection cylindricProjection(cloud);
     auto clusterization = clusterizer.clusterize(cylindricProjection);
     const std::vector<std::vector<int>> clusters = clusterization.first;
-//    const int clustersNumber = clusterization.second;
+    const int clustersNumber = clusterization.second;
     // ATTENTION! CHANGE COORDINATE SYSTEM
-//    pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL> globalCoordsCloud;
+    pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL> globalCoordsCloud;
 
 //    pcl::copyPointCloud(orderedCloud, globalCoordsCloud);
-//    pcl_ros::transformPointCloud(orderedCloud, globalCoordsCloud, clusterizer.transform);
-//    Detections detections(globalCoordsCloud, clusters, clustersNumber);
+//    pcl_ros::transformPointCloud(cloud, globalCoordsCloud, clusterizer.transform);
+    Detections detections(cylindricProjection, clusters, clustersNumber);
 //    addDetectionsToHistory(detections);
 //    std::vector<boost::optional<visualization_msgs::Marker>> velocities = getDetectionsFromHistory(clusterizer.config.threshold);
 
 //    std::vector<bool> mask = clusterizer.filterDetections(detections);
 
-    std::cerr << "IS it colourClusters?)" << std::endl;
-    pcl::PointCloud<pcl::PointXYZRGBA> colored_cloud = clusterizer.colourClusters(cloud, clusters); //, mask);
+    pcl::PointCloud<pcl::PointXYZRGBA> colored_cloud = clusterizer.colourClusters(cylindricProjection, clusters); //, mask);
 
-    std::cerr << "no" << std::endl;
     ROS_DEBUG("still no");
-//    sensor_msgs::PointCloud2 output;
-//    pcl::toROSMsg(colored_cloud, output);
-//    clusterizer.pub.publish(output);
+    sensor_msgs::PointCloud2 output;
+    pcl::toROSMsg(colored_cloud, output);
+    clusterizer.pub.publish(output);
 //    car_detect::TrackedObjects trackedObjects = detections.getTrackedObjects(mask);
 //    clusterizer.bboxPub.publish(trackedObjects);
 //    std::cerr << "Start publishing velocities\n";

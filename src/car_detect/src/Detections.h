@@ -12,6 +12,7 @@
 #include <car_detect/TrackedObject.h>
 #include <car_detect/TrackedObjects.h>
 #include <boost/optional.hpp>
+#include "CylindricProjection.h"
 
 class BBox {
 public:
@@ -115,13 +116,16 @@ public:
 class Detections {
 public:
     std::vector<BBox> detections;
-    Detections(const pcl::PointCloud<velodyne_pointcloud::PointOffsetIRL>& cloud, const std::vector<int>& pointToCluster, const int clustersNumber) {
+    Detections(const NCylindricProjection::CylindricProjection& cloud, const std::vector<std::vector<int>>& pointToCluster, const int clustersNumber) {
         detections.clear();
         detections.resize(clustersNumber - 2);
-        assert(cloud.size() == pointToCluster.size());
-        for (int i = 0; i < cloud.size(); ++i) {
-            if (pointToCluster[i] > 1) {
-                detections[pointToCluster[i] - 2].add(cloud[i]);
+        for (int i = 0; i < pointToCluster.size(); ++i) {
+            for (int j = 0; j < pointToCluster[0].size(); ++j) {
+                if (pointToCluster[i][j] > 1) {
+                    assert(cloud.mask[i][j]);
+                    assert(detections.size() + 2 > pointToCluster[i][j]);
+                    detections[pointToCluster[i][j] - 2].add(cloud.cylindricProjection[i][j]);
+                }
             }
         }
         for (const auto detection: detections) {

@@ -7,7 +7,7 @@
 #include <boost/math/constants/constants.hpp>
 
 namespace NCylindricProjection {
-    const int N_COLUMNS = 400; // 2150;
+    const int N_COLUMNS = 600; // 2150;
     const int N_RINGS = 64;
     const double PI = boost::math::constants::pi<double>();
     class CylindricProjection {
@@ -15,7 +15,7 @@ namespace NCylindricProjection {
         std::vector<std::vector<velodyne_pointcloud::PointOffsetIRL>> cylindricProjection;
         std::vector<std::vector<int>> mask;
 
-        CylindricProjection(const pcl::PointCloud <velodyne_pointcloud::PointOffsetIRL> &cloud);
+        explicit CylindricProjection(const pcl::PointCloud <velodyne_pointcloud::PointOffsetIRL> &cloud);
 
         std::vector<std::vector<int>> getEdges() const;
         int getScansNumber() const;
@@ -26,6 +26,9 @@ namespace NCylindricProjection {
             assert(idx <= N_COLUMNS * N_RINGS);
             assert(mask[idx / N_RINGS][idx % N_RINGS]);
             return cylindricProjection[idx / N_RINGS][idx % N_RINGS];
+        }
+        inline int size() const {
+            return N_RINGS * N_COLUMNS;
         }
 
 

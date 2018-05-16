@@ -1,0 +1,7 @@
+1) Intro, small talk on task
+2) Approaches (for detection and tracking)
+3) Benchmark (KITTI)
+4) Paper I based my work on (efficient online segmentation) and its problems: merged objects, small range
+5) My approach + distance euristic + dimensions heuristic)
+5) Current results (visualization in rviz)
+6) future work (find baseline, check on kitti benchmark, time efficiency optimization)

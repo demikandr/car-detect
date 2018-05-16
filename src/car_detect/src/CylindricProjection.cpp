@@ -26,20 +26,18 @@ namespace NCylindricProjection {
                 return result;
             };
             int ring = 0;
-            int startingColumn = getColumn(cloud[0]);
+            int startingColumn = getColumn(cloud[cloud.size() - 1]);
             for (int i = cloud.size() - 1; i >= 0; --i) {
                 int column = getColumn(cloud[i]);
-                if ((i + 1 < cloud.size()) && (getColumn(cloud[i + 1]) > startingColumn) && (column <= startingColumn)) {
+//                std::cerr << column << std::endl;
+                if ((i + 1 < cloud.size()) && (getColumn(cloud[i + 1]) < startingColumn) && (column >= startingColumn)) {
                     ring++;
-                    assert(ring <= N_RINGS);
+                    assert(ring < N_RINGS);
                 }
-
-//            std::cerr << getSlope(cloud[i]) << '\t' << std::atan2(cloud[i].x, cloud[i].y) << '\t' <<  cloud[i].z << std::endl;
-//            std::cerr << std::atan2(cloud[i].x, cloud[i].y) << std::endl;
                 mask[column][ring] = 1;
-                cylindricProjection[column][ring] = cloud[i];
+                cylindricProjection[column][ring] = cloud[i], column;
             }
-//            assert(ring == 0);
+            std::cerr << "ring " << ring << std::endl;
             ROS_DEBUG("end cylindric projection creation");
 
         }
