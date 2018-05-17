@@ -16,6 +16,7 @@
 #include <tf/tfMessage.h>
 #include <tf/transform_datatypes.h>
 
+using namespace NCylindricProjection;
 class Clusterizer {
 public:
     ros::Publisher pub, bboxPub, velocityPub;
@@ -26,6 +27,43 @@ public:
 
     Clusterizer() {
     }
+
+    bool isOutlier(const NCylindricProjection::CylindricProjection& cloud, int x, int y) const {
+        return config.plant_threshold < Utils::variance(cloud.cylindricProjection[(x + N_COLUMNS - 1) % N_COLUMNS][y],
+                                                        cloud.cylindricProjection[x][y],
+        cloud.cylindricProjection[(x + 1) % N_COLUMNS][y]);
+    }
+    bool isPlant(const NCylindricProjection::CylindricProjection& cloud, int x, int y) const {
+        std::vector<std::pair<int, int>> candidates;
+        candidates.push_back(std::make_pair((x + 1) % N_COLUMNS, y));
+        candidates.push_back(std::make_pair((x + N_COLUMNS - 1) % N_COLUMNS, y));
+        candidates.push_back(std::make_pair((x + 2) % N_COLUMNS, y));
+        candidates.push_back(std::make_pair((x + N_COLUMNS - 2) % N_COLUMNS, y));
+        candidates.push_back(std::make_pair(x, y));
+        if (y > 0) {
+            candidates.push_back(std::make_pair(x, y-1));
+        }
+        if (y + 1 < N_RINGS) {
+            candidates.push_back(std::make_pair(x, y + 1));
+        }
+        int outliersInNeighbourhoodNumber = 0;
+        for (auto candidate: candidates) {
+            outliersInNeighbourhoodNumber += isOutlier(cloud, candidate.first, candidate.second);
+        }
+        float outliersInNeighbourhoodPercent = (float) outliersInNeighbourhoodNumber / (float) candidates.size();
+        return config.oinp < outliersInNeighbourhoodPercent;
+    }
+
+    std::vector<std::vector<int>> markPlants(const NCylindricProjection::CylindricProjection& cloud) const {
+        std::vector<std::vector<int>> clusters(NCylindricProjection::N_COLUMNS, std::vector<int>(NCylindricProjection::N_RINGS));
+        for (int i = 0; i < NCylindricProjection::N_COLUMNS; ++i) {
+            for (int j = 0; j < NCylindricProjection::N_RINGS; ++j) {
+                clusters[i][j] = isPlant(cloud, i, j);
+            }
+        }
+        return clusters;
+    }
+
     bool isGroundEdge(const int& x, const int& y) const {
         assert(false);
     }
@@ -33,8 +71,8 @@ public:
     bool isGroundEdge(const velodyne_pointcloud::PointOffsetIRL& x, const velodyne_pointcloud::PointOffsetIRL& y,
                       const velodyne_pointcloud::PointOffsetIRL& x1, const velodyne_pointcloud::PointOffsetIRL& y1) const {
 
-        return (std::abs(Utils::oxyAngle(x, x1) - Utils::oxyAngle(y, y1)) < config.alpha_ground) &&
-                ((Utils::distance(x, x1) + Utils::distance(y, y1)) / std::min(Utils::distance(x, x1), Utils::distance(y, y1)) < 4);
+        return (std::abs(Utils::oxyAngle(x, x1) - Utils::oxyAngle(y, y1)) < config.alpha_ground); // &&
+//                ((Utils::distance(x, x1) + Utils::distance(y, y1)) / std::min(Utils::distance(x, x1), Utils::distance(y, y1)) < 4);
     }
 
 
@@ -46,15 +84,16 @@ public:
         groundMask[i][j] = 1;
         auto tryStep = [&](int x, int y) {
             assert(y + 1 < NCylindricProjection::N_RINGS);
-            if ((cloud.mask[x][y]) && (groundMask[x][y] == 0) && isGroundEdge(cloud.cylindricProjection[i][j], cloud.cylindricProjection[x][y],
-                                                                                cloud.cylindricProjection[i][j+1], cloud.cylindricProjection[x][y+1]) &&
-                    ((std::abs(y - j) > 0) || (Utils::distance(cloud.cylindricProjection[i][j],  cloud.cylindricProjection[x][y]) < 0.5))) {
+            if ((cloud.mask[x][y]) && (groundMask[x][y] == 0) && (cloud.cylindricProjection[x][y].z < -1) &&
+                    isGroundEdge(cloud.cylindricProjection[i][j], cloud.cylindricProjection[x][y],
+                                                                                cloud.cylindricProjection[i][j+1], cloud.cylindricProjection[x][y+1])) {// &&
+//                    ((std::abs(y - j) > 0) || (Utils::distance(cloud.cylindricProjection[i][j],  cloud.cylindricProjection[x][y]) < 0.5))) {
                 markGroundDfs(cloud, groundMaskPtr, x, y);
             }
         };
-//        if (j > 0) {
-//            tryStep(i, j-1);
-//        }
+        if (j > 0) {
+            tryStep(i, j-1);
+        }
         if (j < NCylindricProjection::N_RINGS - 2) {
             tryStep(i, j + 1);
         }
@@ -64,13 +103,14 @@ public:
 
     std::vector<std::vector<int>> markGround(const NCylindricProjection::CylindricProjection& cloud) const {
         ROS_DEBUG("start markGround");
-        std::vector<std::vector<int>> groundMask(NCylindricProjection::N_COLUMNS, std::vector<int>(NCylindricProjection::N_RINGS, 0));
+//        std::vector<std::vector<int>> groundMask(NCylindricProjection::N_COLUMNS, std::vector<int>(NCylindricProjection::N_RINGS, 0));
+        std::vector<std::vector<int>> groundMask = markPlants(cloud);
         const std::vector<std::vector<int>>& mask = cloud.mask;
         int counter = 0;
         for (size_t j = 0; j < mask[0].size(); ++j) {
             for (size_t i = 0; i < mask.size(); ++i) {
 
-                if (mask[i][j] and (j + 1 < NCylindricProjection::N_RINGS) and
+                if (mask[i][j] and (j + 1 < NCylindricProjection::N_RINGS) and (cloud.cylindricProjection[i][j].z < -1) and
                         ((j == 0) or (mask[i][j-1] == 0)) and
                         (Utils::oxyAngleCos(velodyne_pointcloud::PointOffsetIRL(), cloud.cylindricProjection[i][j]) < 0.5))
                 { //}} && !groundMask[Utils::safe_idx(i-1)]) {
@@ -185,6 +225,11 @@ public:
             point.r = cluster * 53 % 256;
             point.g = cluster * 29 % 256;
             point.b = cluster * 71 % 256;
+            if (config.show_true_detects) {
+                point.a = 255;
+            } else {
+                point.a = 1;
+            }
 //            point.b = 255;
         }
     }
