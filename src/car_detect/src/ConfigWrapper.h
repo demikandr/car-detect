@@ -13,9 +13,7 @@ class ConfigWrapper: public  car_detect::generalConfig {
 
         void callback(car_detect::generalConfig &config, uint32_t level) {
             car_detect::generalConfig::operator=(config);
-            ROS_INFO("Reconfigure Request: %d %f",
-                     config.min_cluster_size, config.alpha);
-            // TODO(demikandr) add call to cloud_cb
+            ROS_INFO("Reconfigure Request: %d %f", config.min_cluster_size, config.alpha);
         }
 
     public:
